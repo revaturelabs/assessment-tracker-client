@@ -4,7 +4,14 @@ let onBatch = onPage;
 let onAssess = offPage;
 let onNotes = offPage;
 
-
+let state={};
+state.batchId = window.localStorage["batchId"];
+if (window.localStorage["batchId"]){
+    console.log("batchId already stored");
+    console.log(window.localStorage["batchId"]);
+}else{
+    localStorage.setItem("batchId", null);
+}
 let batch = {
     id: 1,
     name: "",
@@ -18,8 +25,8 @@ let assesssments = new Object();
 function pageDataToLoad() {
     // reset page content back to the actual page
     $("#mainbody").html(tempMainContentHolder);
-    if (getIDFromUrl()) {
-        batch.id = getIDFromUrl();
+    if (state.batchId != null) {
+        batch.id = state.batchId;
         batchData(batch.id, batch);
     } else {
         document.getElementById("mainbody").innerHTML = `
@@ -102,12 +109,13 @@ function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssessments_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `assessments/batch/${batch.id}/${weekId}`
+    let endpoint =  `assessments/batch/${window.localStorage["batchId"]}/${weekId}`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
     //java_base_url(java)
     let url = java_base_url + endpoint;
+    console.log(url)
     //request_type: type of request
     let request_type = "GET";
     //location you want the response to load
