@@ -209,7 +209,7 @@ function searchBatches(searchVal) {
     //endpoint: rest api endpoint
 
     //Backend route does not currently check to see if you're logged in
-    let endpoint = `batches/search/${loginData.id}/${searchVal}`;
+    let endpoint = `trainers/${loginData.id}/batches?track=${searchVal}`;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
