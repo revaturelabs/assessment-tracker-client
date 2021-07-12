@@ -109,7 +109,7 @@ function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssessments_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `/batches/${window.localStorage["batchId"]}/assessments?week=${weekId}`
+    let endpoint =  `batches/${window.localStorage["batchId"]}/assessments?week=${weekId}`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
