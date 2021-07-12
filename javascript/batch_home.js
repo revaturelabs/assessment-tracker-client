@@ -109,7 +109,7 @@ function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssessments_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `assessments/batch/${window.localStorage["batchId"]}/${weekId}`
+    let endpoint =  `/batches/${window.localStorage["batchId"]}/assessments?week=${weekId}`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -173,7 +173,7 @@ function batchData(batchID, response_loc) {
     //naming convention: [this function name]_complete
     let response_func = batchData_complete;
     //endpoint: rest api endpoint
-    let endpoint = "batch/"+batchID;
+    let endpoint = "batches/"+batchID;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -274,7 +274,7 @@ function updateWeight(weekID, assessID, weight) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = updateWeight_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `assessments/weight/${assessID}/${weight}`
+    let endpoint =  `assessments/${assessID}/weight?weight=${weight}`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -445,7 +445,7 @@ function getScore(assessmentId,associateId,response_loc,load_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getScore_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `grade/${associateId}/${assessmentId}`;
+    let endpoint =  `assessments/${assessmentId}/grade?associateId=${associateId}`;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
