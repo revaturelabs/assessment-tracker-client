@@ -96,8 +96,8 @@
                                         <span id="loadResult"></span><span id="logload"></span>
                                     </div>
                                     <div class="d-inline-block d-flex justify-content-end col col-12 col-sm-7 p-0 m-0">
-                                        <button onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Log In &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
-                                        <button type="button" class="btn btn-warning ml-1" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                        <button id="login_cred_button" onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Log In &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
+                                        <button id="login_close_button" type="button" class="btn btn-warning ml-1" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             </form>
@@ -122,8 +122,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadLogOutResult"></span><span id="logOutLoad"></span>
-                                    <button onclick="wipeStorage();logout();goToPage('home')" type="button" data-dismiss="modal" class="btn btn-info">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="logout_button" onclick="wipeStorage();logout();goToPage('home')" type="button" data-dismiss="modal" class="btn btn-info">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
+                                    <button id="logout_close_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                         </div>
                     </div>
@@ -171,8 +171,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadAssessResult"><span id="assessLoad"></span></span>
-                                    <button onclick="let form = document.getElementById('createAssessmentForm');if (form.checkValidity() === true) {createAssessment();}" type="submit" class="btn btn-info">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="create_assessment_button" onclick="let form = document.getElementById('createAssessmentForm');if (form.checkValidity() === true) {createAssessment();}" type="submit" class="btn btn-info">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
+                                    <button id="close_assessment_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                             </form>
                         </div>
@@ -200,8 +200,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadweightResult"></span><span id="WeightLoad"></span>
-                                    <button onclick="let form = document.getElementById('adjustWeightForm');if (form.checkValidity() === true) {updateWeight(batch.currentWeek,batch.currentID, document.getElementById('weightControl').value); console.log(document.getElementById('weightControl').value);}" type="submit" class="btn btn-info" data-dismiss="modal">Save &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="slider_submit_button" onclick="let form = document.getElementById('adjustWeightForm');if (form.checkValidity() === true) {updateWeight(batch.currentWeek,batch.currentID, document.getElementById('weightControl').value); console.log(document.getElementById('weightControl').value);}" type="submit" class="btn btn-info" data-dismiss="modal">Save &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i></button>
+                                    <button id="slider_close_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                             </form>
                         </div>

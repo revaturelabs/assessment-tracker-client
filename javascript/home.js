@@ -29,6 +29,8 @@ let onHome = onPage;
 let onBatch = offPage;
 let onAssess = offPage;
 let onNotes = offPage;
+
+batchButtonCounter = 0;
 // Chapter 1. Global var Declarations End -----------------
 
 // Chapter 2. Ajax ----------------------------------------
@@ -196,10 +198,10 @@ function branchData_complete(status, response, response_loc, load_loc) {
             if(myDateArray.indexOf(myDate.getUTCMonth()) == -1){
                 myDateArray.push(myDate.getUTCMonth());
                 //load the response into the response_loc
-                document.getElementById(response_loc).innerHTML += newBatchBtn(batches[index].trainingTrack+" - "+batches[index].name, batches[index].id, myDate.getUTCMonth());
+                document.getElementById(response_loc).innerHTML += newBatchBtn(batches[index].trainingTrack+" - "+batches[index].name, batches[index].id, batches[index].trainingTrack, myDate.getUTCMonth());
             } else {
                 //load the response into the response_loc
-                document.getElementById(response_loc).innerHTML += newBatchBtn(batches[index].trainingTrack+" - "+batches[index].name, batches[index].id);
+                document.getElementById(response_loc).innerHTML += newBatchBtn(batches[index].trainingTrack+" - "+batches[index].name, batches[index].id, batches[index].trainingTrack);
             }
         }));
         //action if code 201
@@ -242,15 +244,17 @@ function newBatch(year) {
     </div>`;
 }
 // holds the styling for the batches
-function newBatchBtn(btnName, batchID,monthName) {
+function newBatchBtn(btnName, batchID, btnID, monthName) {
     if(monthName) {
+        batchButtonCounter++;
         return `
         <h6 class="card-title">${months[monthName]}</h6>
-        <button onclick="goToBatchPage(${batchID})" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${btnName}</button>
+        <button id="${btnID}_button_${batchButtonCounter}" onclick="goToBatchPage(${batchID})" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${btnName}</button>
         `;
     } else {
+        batchButtonCounter++;
         return `
-        <button onclick="goToBatchPage(${batchID})" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${btnName}</button>
+        <button id="${btnID}_button_${batchButtonCounter}" onclick="goToBatchPage(${batchID})" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${btnName}</button>
         `;
     }
 }
