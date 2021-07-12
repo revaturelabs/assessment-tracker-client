@@ -42,7 +42,7 @@ let mainHeader = `
             </svg>
         </span>
     </a>
-    <a class="navbar-brand order-xs-1 order-sm-1 order-md-1 order-lg-1 order-md-1 col col-6 col-sm-4 col-md-3 col-lg-2" href="home"><img src="../static/images/rev-logo.png" alt="Revature Logo"></a>
+    <a class="navbar-brand order-xs-1 order-sm-1 order-md-1 order-lg-1 order-md-1 col col-6 col-sm-4 col-md-3 col-lg-2" href="home.html"><img src="images/rev-logo.png" alt="Revature Logo"></a>
     <div class="order-xs-3 order-sm-3 order-md-2 order-lg-3 order-md-3 mr-3 col col-3 col-sm-2">
         <a id="loginBtn" data-toggle="modal" data-target="#loginModal" data-preLoad="Some content to pre-load" class="nav-link d-flex text-dark bg-info align-items-center">Log In &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></a>
     </div>
