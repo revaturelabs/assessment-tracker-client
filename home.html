@@ -124,8 +124,8 @@
                                         <span id="loadResult"></span><span id="logload"></span>
                                     </div>
                                     <div class="d-inline-block d-flex justify-content-end col col-12 col-sm-7 p-0 m-0">
-                                        <button onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Log In &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
-                                        <button type="button" class="btn btn-warning ml-1" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                        <button id="login_cred_button" onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Log In &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
+                                        <button id="login_close_button" type="button" class="btn btn-warning ml-1" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                     </div>
                                 </div>
                             </form>
@@ -140,7 +140,7 @@
                     <div class="modal-content">
                         <div class="modal-header text-center">
                             <h5 class="modal-title h1" id="modalLabel"><strong>Log Out</strong></h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <button id="logout_close_X" type="button" class="close" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </div>
@@ -150,8 +150,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadResult"><span id="logload"></span></span>
-                                    <button onclick="wipeStorage();logout();" type="button" data-dismiss="modal" class="btn btn-info">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="logout_button" onclick="wipeStorage();logout();" type="button" data-dismiss="modal" class="btn btn-info">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
+                                    <button id="logout_close_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                         </div>
                     </div>

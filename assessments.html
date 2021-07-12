@@ -146,8 +146,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadResult"><span id="logload"></span></span>
-                                    <button onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Login &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="login_cred_button" onclick="let form = document.getElementById('loginform');if (form.checkValidity() === true) {loginData.email = document.getElementById('recipient-email').value;logMeIN(loginData);}" type="submit" class="btn btn-info">Login &nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i></button>
+                                    <button id="login_close_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                             </form>
                         </div>
@@ -171,8 +171,8 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadResult"><span id="logload"></span></span>
-                                    <button onclick="wipeStorage();logout();" type="button" data-dismiss="modal" class="btn btn-info">Logout &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
-                                    <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+                                    <button id="logout_button" onclick="wipeStorage();logout();" type="button" data-dismiss="modal" class="btn btn-info">Logout &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></button>
+                                    <button id="logout_close_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                         </div>
                     </div>

@@ -146,7 +146,7 @@ function logMeIN(email) {
     //naming convention: [this function name]_complete
     let response_func = logMeIN_complete;
     //endpoint: rest api endpoint
-    let endpoint = "trainer/"
+    let endpoint = "trainers"
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -207,6 +207,8 @@ function searchBatches(searchVal) {
     //naming convention: [this function name]_complete
     let response_func = searchBatches_complete;
     //endpoint: rest api endpoint
+
+    //Backend route does not currently check to see if you're logged in
     let endpoint = `batches/search/${loginData.id}/${searchVal}`;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
