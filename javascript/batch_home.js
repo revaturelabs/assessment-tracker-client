@@ -173,7 +173,7 @@ function batchData(batchID, response_loc) {
     //naming convention: [this function name]_complete
     let response_func = batchData_complete;
     //endpoint: rest api endpoint
-    let endpoint = "batchs/"+batchID;
+    let endpoint = "batches/"+batchID;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
