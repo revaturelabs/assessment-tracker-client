@@ -156,7 +156,7 @@ function branchData(trainerId, year, response_loc) {
     //naming convention: [this function name]_complete
     let response_func = branchData_complete;
     //endpoint: rest api endpoint
-    let endpoint = "batches/"+trainerId+"/"+year;
+    let endpoint =`/trainers/${trainerId}/batches?year=${year}`;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
