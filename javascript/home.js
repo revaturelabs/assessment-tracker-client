@@ -95,7 +95,7 @@ function loadBatchesbyYear(trainerId) {
     //naming convention: [this function name]_complete
     let response_func = loadBatchesbyYear_complete;
     //endpoint: rest api endpoint
-    let endpoint = "years?trainer_id="+trainerId
+    let endpoint = "years?trainerId="+trainerId
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
