@@ -237,12 +237,14 @@ function createAssessment() {
 
     let thisAssessment = {
         assessmentTitle: document.getElementById("assessment-title").value,
-        typeId: document.getElementById("assessment-type").value,
-        batchId: window.localStorage["batchId"],
+        typeId: Number(document.getElementById("assessment-type").value),
+        batchId: Number(window.localStorage["batchId"]),
         weekId: document.getElementById("assessment-week").innerHTML,
-        assessmentWeight: 100
+        assessmentWeight: 100,
+        categoryId: 2
     }
     let jsonData = thisAssessment;
+    console.log(thisAssessment);
     console.log(thisWeekId);
 
     ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
