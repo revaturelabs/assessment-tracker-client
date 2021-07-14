@@ -8,6 +8,18 @@ const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
 const associateLastNameInput = document.getElementById("lastNameInput");
 
+let tempMainContentHolder = $("#mainbody").html();
+let mustLogin = `
+<div class="col-sm-1-10">
+    <div class="card mb-5 bg-darker p-3">
+        <div class="card-body rounded p-3">
+            <h3 class="card-title"><strong>Please Log In</strong></h3>
+            <p class="">If you would like to view your batches then please <a data-toggle="modal" href="#loginModal">Log In Here</a>, or you may click the link above.</p>
+        </div>
+    </div>
+</div>`;
+
+
 async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
 	associateFirstNameInput.classList.remove("is-invalid");
@@ -152,6 +164,19 @@ async function createBatch() {
 	}
 
 	//associates is the array of all the list items
+}
+
+function wipeStorage() {
+    sessionStorage.clear();
+}
+
+// logout function
+function logout(){
+    $("#loginBtn").html(`Log In&nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i>`);
+    document.getElementById("loginBtn").setAttribute("data-target", "#loginModal");
+    tempMainContentHolder = $("#mainbody").html();
+    $("#mainbody").html(mustLogin);
+    loginData = new Object();
 }
 
 //sets startDate to today's date
