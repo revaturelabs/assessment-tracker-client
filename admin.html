@@ -58,14 +58,22 @@
                             <div class="card-body rounded">
                                 <div class = "d-flex flex-wrap justify-content-around">
                                     <div class = "d-flex-inline-block flex fill">
-                                        <h3 class = "card-title">
-                                            <strong>Create A Batch</strong>
-                                        </h3>
-                                        <input id="nameInput" type="text" placeholder="Name"></input>
-                                        <input id="trackInput" type="text" placeholder="Track"></input>
-                                        <input id="startDate" type="date" placeholder="StartDate"></input>
-                                        <input id="endDate" type="date" placeholder="endDate"></input>
-                                        <input type="text" placeholder="Search By Associate Name" id="searchAssociate"></input>
+                                        <div class="form-group">
+                                            <label for="nameInput">Batch Name</label>
+                                            <input class="form-control" id="nameInput" type="text" placeholder="Name"></input>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="trackInput">Training Track</label>
+                                            <input class="form-control" id="trackInput" type="text" placeholder="Track"></input>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="startDate">Start Date</label>
+                                            <input class="form-control" id="startDate" type="date" placeholder="StartDate"></input>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="endDate">End Date</label>
+                                            <input class="form-control" id="endDate" type="date" placeholder="endDate"></input>
+                                        </div>
                                     </div>
                                     
                                 </div>
@@ -73,6 +81,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="d-flex mb-5">
                     <div id="addAssociates" class="col col-12 p-0">
                         <div class="card bg-darker">
@@ -80,10 +89,13 @@
                                 <div class="d-flex flex-wrap justify-content-around">
                                     <div class="d-flex-inline-block flex-fill">
                                         <h3>Associates</h3>
+                                        <div class="form-group">
+                                            <input class="form-control col-sm-4" type="text" placeholder="Search By Associate Name" id="searchAssociate"></input>
+                                        </div>
                                         <label for="unaddedAssociates">Unadded Associates</label>
                                         <ul id="unaddedAssociates" class="d-inline-block card-text overflow-auto assess-panel col col-12">
                                         </ul>
- 			                <button id="createAssociate" class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#newAssociateModal">Create Associate</button>
+ 			                            <button id="createAssociate" class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#newAssociateModal">Create Associate</button>
                                    </div>
                                     <div class="d-flex-inline-block flex-fill bg-darkest rounded p-3">
                                         <h3>Added Associates</h3>
@@ -91,10 +103,11 @@
                                         <ul id="addedAssociates" class="card-text overflow-auto assess-panel">
                                             
                                         </ul>
+                                        <button id="submitBatch" class="btn btn-info border-0 d-block">Submit</button>
                                     </div>
                                 </div>
                             </div>
-                            <button id="submitBatch" class="btn btn-info border-0 d-block">Submit</button>
+                            
                         </div>
                     </div>
                 </div>
