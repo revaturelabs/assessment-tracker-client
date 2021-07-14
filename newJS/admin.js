@@ -146,6 +146,6 @@ async function createBatch() {
 	//associates is the array of all the list items
 }
 
-search.addEventListener("onkeyup", filterList);
+search.addEventListener("keyup", filterList);
 submit.addEventListener("click", createBatch);
 document.addEventListener("DOMContentLoaded", getAllAssociates);
