@@ -211,6 +211,10 @@ function logMeIN_complete(status, response, response_loc, load_loc) {
         saveSession(loginData, response);
         // loads it back to the object
         loginData = getSession(loginData, true);
+        //admin check
+        if(loginData["admin"]){
+            goToAdminPage(true);
+        }
         // hides the modal after login is successful
         $('#loginModal').modal('hide');
         pageDataToLoad();
@@ -449,6 +453,11 @@ function preloadService(formObject) {
 function goToBatchPage(batchId) {
     window.localStorage["batchId"]= batchId;
     window.location.href = "batch_home.html";
+}
+
+function goToAdminPage(isAdmin) {
+    window.sessionStorage["isAdmin"]= isAdmin;
+    window.location.href = "admin.html";
 }
 
 //retrieves the session and saves it somewhere
