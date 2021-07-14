@@ -8,13 +8,18 @@ const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
 const associateLastNameInput = document.getElementById("lastNameInput");
 
-
 async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
 	associateFirstNameInput.classList.remove("is-invalid");
 	associateLastNameInput.classList.remove("is-invalid");
 
-	if (isInputValid(associateEmailInput, associateFirstNameInput, associateLastNameInput)) {
+	if (
+		isInputValid(
+			associateEmailInput,
+			associateFirstNameInput,
+			associateLastNameInput
+		)
+	) {
 		const associateEmail = associateEmailInput.value;
 		associateEmailInput.value = "";
 
@@ -28,22 +33,22 @@ async function createNewAssociate() {
 			method: "POST",
 			mode: "cors",
 			headers: {
-				'Content-Type': 'application/json'
+				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({
-				"firstName": associateFirstName,
-				"lastName": associateLastName,
-				"email": associateEmail,
-				"trainingStatus": ""
-			})
+				firstName: associateFirstName,
+				lastName: associateLastName,
+				email: associateEmail,
+				trainingStatus: "",
+			}),
 		};
 
 		const response = await fetch(path + "/associates", config);
 
 		if (response.status == 201) {
-			$('#newAssociateModal').modal('hide');
+			$("#newAssociateModal").modal("hide");
 			let result = await response.json();
-        		unaddedAssoc.innerHTML+=`<li name="${result.id}">${result.firstName} ${result.lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`
+			unaddedAssoc.innerHTML += `<li name="${result.id}">${result.firstName} ${result.lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
 		} else {
 			alert("There was an error while creating the associate");
 		}
@@ -52,10 +57,13 @@ async function createNewAssociate() {
 	}
 }
 
-
 function isInputValid(email, firstName, lastName) {
 	let valid = true;
-	if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email.value)) {
+	if (
+		!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+			email.value
+		)
+	) {
 		email.classList.add("is-invalid");
 		valid = false;
 	}
@@ -108,8 +116,8 @@ async function createBatch() {
 	const trackInput = document.getElementById("trackInput").value;
 	const start = document.getElementById("startDate").value;
 	const end = document.getElementById("endDate").value;
-	const startDate = new Date(start).getTime();
-	const endDate = new Date(end).getTime();
+	const startDate = new Date(start).getTime() / 1000;
+	const endDate = new Date(end).getTime() / 1000;
 	const req = {
 		name: nameInput,
 		trainingTrack: trackInput,
@@ -146,6 +154,20 @@ async function createBatch() {
 	//associates is the array of all the list items
 }
 
+//sets startDate to today's date
+const setStartDate = () => {
+	const currDate = new Date().toDateInputValue();
+	document.getElementById("startDate").value = currDate;
+};
+
+//Helper function to stripdown date to this format: "07-02-2021" for the frontend date selector
+Date.prototype.toDateInputValue = function () {
+	var local = new Date(this);
+	local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+	return local.toJSON().slice(0, 10);
+};
+
 search.addEventListener("keyup", filterList);
 submit.addEventListener("click", createBatch);
 document.addEventListener("DOMContentLoaded", getAllAssociates);
+document.addEventListener("DOMContentLoaded", setStartDate);
