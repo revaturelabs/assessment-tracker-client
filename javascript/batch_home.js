@@ -244,6 +244,7 @@ async function createAssessment() {
         categoryId: 2
     }
     let jsonData = thisAssessment;
+    console.log(thisAssessment);
     console.log(thisWeekId);
 
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)

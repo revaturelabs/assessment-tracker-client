@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>AdminBatch</title>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <!-- favicon Icon -->
+     <link href="../images/favicon.ico" rel="shortcut icon" />
+     <!-- Bootstrap CSS -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+     <!-- Override CSS -->
+     <!-- Font Awesome for custom loaders and icons -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+     <!-- Root Level CSS minified -->
+     <link rel="stylesheet" href="css/main.min.css">
+</head>
+<body class="bg-dark">
+
+    <header id="headContent">
+        <nav class="nav top-nav navbar-expand-lg d-flex justify-content-between bg-dark" aria-labelledby="Topbar navigation">
+            <a class="navbar-toggler rounded-0" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon text-darker text-center rounded-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </span>
+            </a>
+            <a class="navbar-brand order-md-1 order-xs-1" href="#"><img src="images/rev-logo.png" alt="Revature Logo"></a>
+            <div class="order-xs-3 order-sm-3 order-md-2 order-lg-3 order-md-3 mr-3 col col-3 col-sm-2">
+                <a id="loginBtn" data-toggle="modal" data-target="#logoutModal" data-preLoad="Some content to pre-load" class="nav-link d-flex text-dark bg-info align-items-center">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></a>
+            </div>
+            
+        </nav>
+    </header>
+    <main class="row row-cols-2 bg-darker">
+        <nav id="navController" class="left-nav col col-2 col-md-2 text-left" aria-labelledby="Sidebar navigation">
+            <a class="nav-link text-dark d-flex align-items-center justify-content-center justify-content-md-start" title="Home" href="home.html"><i class="fa fa-home" aria-hidden="true"></i>&nbsp;<span class="d-none d-md-inline">Home</span></a>
+        </nav>
+        <div id="mainbody" class="col col-10 col-md-10 mainbody bg-darker text-light p-5">
+            <input id="nameInput" type="text" placeholder="Name"></input>
+            <input id="trackInput" type="text" placeholder="Track"></input>
+            <input id="startDate" type="date" placeholder="StartDate"></input>
+            <input id="endDate" type="date" placeholder="endDate"></input>
+            <input type="text" placeholder="Search By Associate Name" id="searchAssociate"></input>
+            <label for="unaddedAssociates">Unadded Associates</label>
+            <ul id="unaddedAssociates">
+            </ul>
+            <label for="addedAssociates">Added Associates</label>
+            <ul id="addedAssociates">
+
+            </ul>
+            <button id="createAssociate">Create Associate</button>
+            <button id="submitBatch">Submit</button>
+        </div>
+    </main>
+    
+</body>
+<script src="newJS/admin.js"></script>
+</html>

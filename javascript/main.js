@@ -559,12 +559,15 @@ function newGenForms() {
 function styleSearch(searchJson, searchTxt) {
     let display = "";
     $.each(searchJson,((index, item) => {
-        display += `<div class="d-block m-1 bg-lighter rounded"><a class="d-block text-white p-1 bg-lighter rounded" href="batch?batchID=${item.id}"><strong class="text-black">${item.trainingTrack.substr(0, searchTxt.length)}</strong>${item.trainingTrack.substr(searchTxt.length)}<small> - <i>[${item.name}]</i> Started(${item.startDate}) and goes for ${item.totalWeeks} weeks</small></a></div>`;
+        display += `<div class="d-block m-1 bg-lighter rounded"><a onclick='setSearchBatch(${item.id})' href="batch_home.html" class="d-block text-white p-1 bg-lighter rounded" ><strong class="text-black">${item.trainingTrack.substr(0, searchTxt.length)}</strong>${item.trainingTrack.substr(searchTxt.length)}<small> - <i>[${item.name}]</i> Started(${item.startDate}) and goes for ${item.totalWeeks} weeks</small></a></div>`;
     }));
     return display;
 }
 /*execute a function when someone clicks in the document:*/
 //this is to close the autocomplete search if you click off
+function setSearchBatch(id){
+    window.localStorage["batchId"]=id;
+}
 document.addEventListener("click", function (e) {
     closeAllLists(e.target);
 });
