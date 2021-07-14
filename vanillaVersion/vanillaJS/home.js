@@ -7,7 +7,7 @@ const logInOutBtn = document.getElementById('loginBtn');
 /*UI Rendering*/
 const renderNewBatchBtn = function(batches){
     const markup = batches.map(batch => {                                                                       
-        const str = `<button id="${batch.trainingTrack}_button_${state.btnCounter}" style="margin-left: .17rem;" onclick="redirectTo('batch_home2.html')" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${batch.trainingTrack} - ${batch.name}</button>`;
+        const str = `<button id="${batch.trainingTrack}_button_${state.btnCounter}" style="margin-left: .17rem;" onclick="redirectTo('batch_homeVanilla.html')" class="d-inline-block my-2 btn btn-light text-primary border border-dark bg-darker p-1 rounded">${batch.trainingTrack} - ${batch.name}</button>`;
         state.btnCounter++;
         return str;
     });
