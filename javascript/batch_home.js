@@ -21,6 +21,9 @@ let batch = {
     totalWeeks: 0
 }
 let assesssments = new Object();
+let associates = new Object();
+let assessmentsArr = [];
+
 
 function pageDataToLoad() {
     // reset page content back to the actual page
@@ -45,6 +48,21 @@ function pageDataToLoad() {
     }
 }
 const panels = document.getElementById("panels");
+
+async function generateTable(week){
+    
+    let tableInnards = `<table><thead><tr>Associate Name</tr>`;
+
+    for(let i = 0; i < assessmentsArr[2]; ++i) {
+        tableInnards+=`<tr>${assessmentsArr[2][i].title}</tr>`;
+    }
+    tableInnards+=`</thead><tbody>`;
+    for(associate of associates){
+        tableInnards+=`<tr><td>${associate.firstName}<td>0</td><td>0</td><td>0</td></tr>`;
+    }
+    tableInnards+=`</tbody></table>`;
+    document.getElementById("mainbody").innerHTML=tableInnards;
+}
 
 async function addWeek(totalWeeks) {
     let holder = "";
@@ -103,7 +121,37 @@ function newWeek(week) {
             </div>
         </div>
     </div>`;
+}//Get all Current Assessments for a Week
+async function getAssessmentsForWeek(weekId) {
+    
+    let response_func = getAssessmentsForWeekComplete;
+   
+    let endpoint =  `batches/${window.localStorage["batchId"]}/weeks/${weekId}/assessments`
+
+    let url = java_base_url + endpoint;
+    console.log(url)
+   
+    let request_type = "GET";
+    
+    let response_loc = `mainbody`;
+    
+    let load_loc = "batchLoader"+weekId;
+    
+    let jsonData = "";
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
+
+function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
+    
+    if (status == 200) {
+        assessmentsArr[2] = JSON.parse(response);
+        generateTable(2)
+        console.log(res);
+       
+    }
+}
+
 //Get all Current Assessments for a Week
 async function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
@@ -209,8 +257,9 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         let jsonHolder = JSON.parse(response);
         response_loc = jsonHolder;
         batch = response_loc;
-        await addWeek(batch.totalWeeks);
-        getAssociates();
+        //await addWeek(batch.totalWeeks);
+        //await getAssociates();
+       // await getAssessmentsForWeek(2);
 
         //action if code 201
     } else if(status == 201) {
@@ -352,7 +401,7 @@ async function getAssociates() {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getAssociates_complete(status, response, response_loc, load_loc) {
@@ -371,7 +420,8 @@ function getAssociates_complete(status, response, response_loc, load_loc) {
 
         //action if code 201
     } else if (status == 201) {
-        document.getElementById(response_loc).innerHTML = JSON.parse(response);
+        associates = JSON.parse(response);
+        document.getElementById(response_loc).innerHTML = associates;
         //action if code 400
     } else if (status == 404) {
         //load the response into the response_loc
