@@ -87,7 +87,7 @@ function clickAssociate(listItem){
         unaddedAssoc.appendChild(listItem);
     }
     else{
-        addedAssoc.innerHTML.appendChild(listItem);
+        addedAssoc.appendChild(listItem);
     }
 }
 
