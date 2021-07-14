@@ -1,8 +1,13 @@
-async function createNewAssociate() {
-	const associateEmailInput = document.getElementById("emailInput");
-	const associateFirstNameInput = document.getElementById("firstNameInput");
-	const associateLastNameInput = document.getElementById("lastNameInput");
+const unaddedAssoc = document.getElementById("unaddedAssociates");
+const addedAssoc = document.getElementById("addedAssociates");
 
+const associateEmailInput = document.getElementById("emailInput");
+const associateFirstNameInput = document.getElementById("firstNameInput");
+const associateLastNameInput = document.getElementById("lastNameInput");
+
+
+
+async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
 	associateFirstNameInput.classList.remove("is-invalid");
 	associateLastNameInput.classList.remove("is-invalid");
@@ -60,3 +65,29 @@ function isInputValid(email, firstName, lastName) {
 	}
 	return valid;
 }
+
+async function getAllAssociates(){
+    const config = {
+        method: "GET",
+    };
+    const response = await fetch("http://ec2-34-204-173-118.compute-1.amazonaws.com:5000/associates", config);
+    const associates = await response.json();
+    for(index in associates){
+        unaddedAssoc.innerHTML+=`<li name="${associates[index].id}">${associates[index].firstName} ${associates[index].lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`
+    }
+}
+
+function clickAssociate(listItem){
+    const parentList = listItem.parentElement;
+    if(parentList === addedAssoc){
+        unaddedAssoc.appendChild(listItem);
+    }
+    else{
+        addedAssoc.appendChild(listItem);
+    }
+    console.log(unaddedAssoc.children);
+    console.log(addedAssoc.children);
+}
+
+
+document.addEventListener("DOMContentLoaded", getAllAssociates);
