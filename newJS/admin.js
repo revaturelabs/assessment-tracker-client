@@ -34,7 +34,6 @@ async function createNewAssociate() {
 		const response = await fetch("http://ec2-34-204-173-118.compute-1.amazonaws.com:5000/associates", config);
 
 		if (response.status == 201) {
-			alert("The associate was added");
 			$('#newAssociateModal').modal('hide');
 		} else {
 			alert("There was an error while creating the associate");
