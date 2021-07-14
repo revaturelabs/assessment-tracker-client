@@ -109,7 +109,7 @@ async function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssessments_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `batches/${window.localStorage["batchId"]}/assessments?week=${weekId}`
+    let endpoint =  `batches/${window.localStorage["batchId"]}/weeks/${weekId}/assessments`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -276,7 +276,7 @@ async function updateWeight(weekID, assessID, weight) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = updateWeight_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `assessments/${assessID}/weight?weight=${weight}`
+    let endpoint =  `weight/${weight}/assessments/${assessID}`
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
@@ -285,7 +285,7 @@ async function updateWeight(weekID, assessID, weight) {
     //request_type: type of request
     //options:
     //"GET", "POST", "OPTIONS", "PATCH", "PULL", "PUT", "HEAD", "DELETE", "CONNECT", "TRACE"
-    let request_type = "PUT";
+    let request_type = "PATCH";
     //location you want the response to load
     batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight = weight;
     let response_loc = batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight;
@@ -447,7 +447,7 @@ async function getScore(assessmentId,associateId,response_loc,load_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getScore_complete;
     //endpoint: rest api endpoint
-    let endpoint =  `assessments/${assessmentId}/grade?associateId=${associateId}`;
+    let endpoint =  `assessments/${assessmentId}/associates/${associateId}/grades`;
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
