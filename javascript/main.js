@@ -88,7 +88,7 @@ if (window.localStorage["batchId"]){
 
 // This Ajax Call is a Singleton(only 1 instance)
 // All Ajax calls pass through here
-function ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData) {
+async function ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData) {
     //create the loading object dynamically ----------
 
     //check if load_loc exists
@@ -109,7 +109,7 @@ function ajaxCaller(request_type, url, response_func, response_loc, load_loc, js
     //load factory end ------------------------------
 
     //create the ajax object
-    let ajax = new XMLHttpRequest();
+    /*let ajax = new XMLHttpRequest();
     //initiate the ajax function
     ajax.onreadystatechange = function () {
         if (this.readyState == 4) {
@@ -125,23 +125,48 @@ function ajaxCaller(request_type, url, response_func, response_loc, load_loc, js
             response_func(this.status, response_holder, response_loc, load_loc)
 
         }
-    }
+    }*/
 
-    //request_type:represents the request type: GET, POST, PUT, etc....
-    //url:represents the base_url + the endpoint
-    ajax.open(request_type, url, true);
+    
+    //ajax.open(request_type, url, true);
 
     //optional: checks if json data is being passed
-    if(jsonData) {
+    /*if(jsonData) {
         ajax.setRequestHeader("Content-Type", "application/json");
         ajax.send(JSON.stringify(jsonData));
     } else {
         ajax.send();
+    }*/
+
+    //Make template request object
+    let content_object = {
+        method: request_type,
+        mode: 'cors',
+        credentials: 'same-origin',
+        referrerPolicy: 'no-referrer'
+    };
+    //Set our body if JSON is passed
+    if(jsonData) {
+        content_object.headers = {'Content-Type': 'application/json'};
+        content_object.body = JSON.stringify(jsonData);
     }
+
+    //request_type: represents the request type: GET, POST, PUT, etc....
+    //url: represents the base_url + the endpoint
+    const response = await fetch(url, content_object);
+
+    let response_holder = await response.text();
+
+    //Reset loader
+    document.getElementById(load_loc).innerHTML = "";
+
+    //send the response to this function
+    //response_func(this.status, response_holder, response_loc, load_loc);
+    response_func(response.status, response_holder, response_loc, load_loc);
 }
 // Login Function
 // email for the login(obj)
-function logMeIN(email) {
+async function logMeIN(email) {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = logMeIN_complete;
@@ -165,9 +190,8 @@ function logMeIN(email) {
     //optional:json data to send to the server
     //can be left blank if not needed
     let jsonData = email;
-    console.log(jsonData);
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function logMeIN_complete(status, response, response_loc, load_loc) {
@@ -180,13 +204,13 @@ function logMeIN_complete(status, response, response_loc, load_loc) {
 
     //action if code 200
     if(status == 200) {
-        $("#loginBtn").html(`Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`);
+        //$("#loginBtn").html(`Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`);
+        document.getElementById("loginBtn").innerHTML = `Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`;
         document.getElementById("loginBtn").setAttribute("data-target", "#logoutModal");
         //save the session
         saveSession(loginData, response);
         // loads it back to the object
         loginData = getSession(loginData, true);
-        console.log(loginData);
         // hides the modal after login is successful
         $('#loginModal').modal('hide');
         pageDataToLoad();
@@ -202,7 +226,7 @@ function logMeIN_complete(status, response, response_loc, load_loc) {
 }
 // Search Function
 // load related batches of all batches
-function searchBatches(searchVal) {
+async function searchBatches(searchVal) {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = searchBatches_complete;
@@ -231,7 +255,7 @@ function searchBatches(searchVal) {
     console.log("searchVal")
     console.log(searchVal)
     if(searchVal && loginData.id != undefined) {
-        ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+        await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     } else if(loginData.id == undefined) {
         document.getElementById('searchSuggestion').innerHTML = `<div class="d-block m-1 bg-lighter rounded"><p class="d-block text-center text-black p-3 bg-lighter rounded">Please <a class="text-info login-modal-link rounded" data-toggle="modal" href="#loginModal">Log In</a> to use this search feature.</p></div>`;
     }

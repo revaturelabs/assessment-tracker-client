@@ -37,7 +37,7 @@ batchButtonCounter = 0;
 
 //Caller function: calls an ajax request
 //This is a template to copy and paste to connect to a new endpoint
-function caller() {
+async function caller() {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = caller_complete;
@@ -62,7 +62,7 @@ function caller() {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 //This is a template to copy and paste to connect to a new endpoint
@@ -90,7 +90,7 @@ function caller_complete(status, response, response_loc, load_loc) {
 
 //Caller function: calls an ajax request
 //Function Description goes here
-function loadBatchesbyYear(trainerId) {
+async function loadBatchesbyYear(trainerId) {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = loadBatchesbyYear_complete;
@@ -115,7 +115,7 @@ function loadBatchesbyYear(trainerId) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
@@ -125,6 +125,7 @@ function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
     //The var "load_loc" is set in case the response message is different from the action to be loaded into the named location
     //example:
     //-- you want a message to say "ajax done!" in a popup while the data is compiled and loaded somewhere else
+    console.log(response);
     let jsonHolder = JSON.parse(response);
     //reset the window
     document.getElementById(response_loc).innerHTML = "";
@@ -151,7 +152,7 @@ function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
 
 //Caller function: calls an ajax request
 //Function Description goes here
-function branchData(trainerId, year, response_loc) {
+async function branchData(trainerId, year, response_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = branchData_complete;
@@ -176,7 +177,7 @@ function branchData(trainerId, year, response_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function branchData_complete(status, response, response_loc, load_loc) {
@@ -230,11 +231,11 @@ function branchData_complete(status, response, response_loc, load_loc) {
 // Chapter 6. Misc Named Functions ------------------------
 //data to load on this page
 // should be replicated for each page to abstract the load process in case the user was not logged in on load
-function pageDataToLoad() {
+async function pageDataToLoad() {
     // reset page content back to the actual page
     $("#mainbody").html(tempMainContentHolder);
     loadinfoByClass("trainerName", loginData.first_name+" "+loginData.last_name);
-    loadBatchesbyYear(loginData.id);
+    await loadBatchesbyYear(loginData.id);
 }
 // holds the styling for the batches
 function newBatch(year) {

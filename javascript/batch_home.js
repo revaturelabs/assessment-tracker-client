@@ -46,7 +46,7 @@ function pageDataToLoad() {
 }
 const panels = document.getElementById("panels");
 
-function addWeek(totalWeeks) {
+async function addWeek(totalWeeks) {
     let holder = "";
     for (i = 1; i <= totalWeeks; i++) {
         holder += newWeek(i);
@@ -60,7 +60,7 @@ function addWeek(totalWeeks) {
     </div>`;
     
     for (i = 1; i <= totalWeeks; i++) {
-        getAssessments(i);
+        await getAssessments(i);
     }
 }
 //creates a new assessment link for
@@ -105,7 +105,7 @@ function newWeek(week) {
     </div>`;
 }
 //Get all Current Assessments for a Week
-function getAssessments(weekId) {
+async function getAssessments(weekId) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssessments_complete;
     //endpoint: rest api endpoint
@@ -128,7 +128,7 @@ function getAssessments(weekId) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getAssessments_complete(status, response, response_loc, load_loc) {
@@ -168,7 +168,7 @@ function getAssessments_complete(status, response, response_loc, load_loc) {
 
 //Caller function: calls an ajax request
 ////Get all Current weeks for a Batch
-function batchData(batchID, response_loc) {
+async function batchData(batchID, response_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     //naming convention: [this function name]_complete
     let response_func = batchData_complete;
@@ -193,10 +193,10 @@ function batchData(batchID, response_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
-function batchData_complete(status, response, response_loc, load_loc) {
+async function batchData_complete(status, response, response_loc, load_loc) {
     //do some logic with the ajax data that was returned
     //do this if you are expecting a json object - JSON.parse(response)
 
@@ -209,7 +209,7 @@ function batchData_complete(status, response, response_loc, load_loc) {
         let jsonHolder = JSON.parse(response);
         response_loc = jsonHolder;
         batch = response_loc;
-        addWeek(batch.totalWeeks);
+        await addWeek(batch.totalWeeks);
         getAssociates();
 
         //action if code 201
@@ -223,7 +223,7 @@ function batchData_complete(status, response, response_loc, load_loc) {
 }
 
 // ---------------------createAssessment---------------------
-function createAssessment() {
+async function createAssessment() {
     let response_func = createAssessment_complete;
     //endpoint: rest api endpoint
     let endpoint = "assessments"
@@ -237,15 +237,16 @@ function createAssessment() {
 
     let thisAssessment = {
         assessmentTitle: document.getElementById("assessment-title").value,
-        typeId: document.getElementById("assessment-type").value,
-        batchId: window.localStorage["batchId"],
+        typeId: Number(document.getElementById("assessment-type").value),
+        batchId: Number(window.localStorage["batchId"]),
         weekId: document.getElementById("assessment-week").innerHTML,
-        assessmentWeight: 100
+        assessmentWeight: 100,
+        categoryId: 2
     }
     let jsonData = thisAssessment;
     console.log(thisWeekId);
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function createAssessment_complete(status, response, response_loc, load_loc) {
@@ -270,7 +271,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
 }
 
 //Update the weight of an assessment
-function updateWeight(weekID, assessID, weight) {
+async function updateWeight(weekID, assessID, weight) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = updateWeight_complete;
     //endpoint: rest api endpoint
@@ -295,7 +296,7 @@ function updateWeight(weekID, assessID, weight) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function updateWeight_complete(status, response, response_loc, load_loc) {
@@ -326,7 +327,7 @@ function updateWeight_complete(status, response, response_loc, load_loc) {
 }
 
 //Update the weight of an assessment
-function getAssociates() {
+async function getAssociates() {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getAssociates_complete;
     //endpoint: rest api endpoint
@@ -350,7 +351,7 @@ function getAssociates() {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getAssociates_complete(status, response, response_loc, load_loc) {
@@ -381,7 +382,7 @@ function getAssociates_complete(status, response, response_loc, load_loc) {
 }
 
 //Update the the score of an assessment for an associate
-function UpdateScores(grade,assessmentID,response_loc,load_loc) {
+async function UpdateScores(grade,assessmentID,response_loc,load_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = UpdateScores_complete;
     //endpoint: rest api endpoint
@@ -409,7 +410,7 @@ function UpdateScores(grade,assessmentID,response_loc,load_loc) {
         "score": grade
     };
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function UpdateScores_complete(status, response, response_loc, load_loc) {
@@ -441,7 +442,7 @@ function UpdateScores_complete(status, response, response_loc, load_loc) {
 }
 
 //get the score for an assessment for an associate
-function getScore(assessmentId,associateId,response_loc,load_loc) {
+async function getScore(assessmentId,associateId,response_loc,load_loc) {
     //set the caller_complete to the function that is supposed to receive the response
     let response_func = getScore_complete;
     //endpoint: rest api endpoint
@@ -465,7 +466,7 @@ function getScore(assessmentId,associateId,response_loc,load_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getScore_complete(status, response, response_loc, load_loc) {
