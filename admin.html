@@ -36,13 +36,30 @@
 	      </button>
 	    </div>
 	    <div class="modal-body">
-		    <input type="text" placeholder="Email" style="width:100%;" id="emailInput"><br><br>
-		    <input type="text" placeholder="First Name" style="width:100%;" id="firstNameInput"><br><br>
-		    <input type="text" placeholder="Last Name" style="width:100%;" id="lastNameInput"><br><br>
+		    <div>
+			<input type="text" placeholder="Email" style="width:100%;" id="emailInput" class="form-control">
+			<div class="invalid-feedback">
+				Please provide a valid email.
+			</div>
+		    </div><br>
+
+		    <div>
+			<input type="text" placeholder="First Name" style="width:100%;" id="firstNameInput" class="form-control">
+			<div class="invalid-feedback">
+				Please provide a valid first name.
+			</div>
+		    </div><br>
+
+		    <div>
+			<input type="text" placeholder="Last Name" style="width:100%;" id="lastNameInput" class="form-control">
+			<div class="invalid-feedback">
+				Please provide a valid last name.
+			</div>
+		    </div><br>
 	    </div>
 	    <div class="modal-footer">
 	      <button type="button" class="btn btn-secondary" data-dismiss="modal" id='cancelAddButton'>Cancel</button>
-	      <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="createNewAssociate()" id='submitAddButton'>Submit</button>
+	      <button type="button" class="btn btn-primary"  onclick="createNewAssociate()" id='submitAddButton'>Submit</button>
 	    </div>
 	  </div>
 	</div>
