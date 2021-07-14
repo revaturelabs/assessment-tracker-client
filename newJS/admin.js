@@ -39,6 +39,8 @@ async function createNewAssociate() {
 
 		if (response.status == 201) {
 			$('#newAssociateModal').modal('hide');
+			let result = await response.json();
+        		unaddedAssoc.innerHTML+=`<li name="${result.id}">${result.firstName} ${result.lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`
 		} else {
 			alert("There was an error while creating the associate");
 		}
