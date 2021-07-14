@@ -6,7 +6,6 @@ const associateFirstNameInput = document.getElementById("firstNameInput");
 const associateLastNameInput = document.getElementById("lastNameInput");
 
 
-
 async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
 	associateFirstNameInput.classList.remove("is-invalid");
