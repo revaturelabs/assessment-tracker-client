@@ -48,7 +48,7 @@ async function createNewAssociate() {
 		if (response.status == 201) {
 			$("#newAssociateModal").modal("hide");
 			let result = await response.json();
-			unaddedAssoc.innerHTML += `<li name="${result.id}">${result.firstName} ${result.lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
+			unaddedAssoc.innerHTML += `<li class="associateList" name="${result.id}">${result.firstName} ${result.lastName}<input class="associateCheck" onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
 		} else {
 			alert("There was an error while creating the associate");
 		}
@@ -85,7 +85,7 @@ async function getAllAssociates() {
 	const response = await fetch(path + "/associates", config);
 	const associates = await response.json();
 	for (index in associates) {
-		unaddedAssoc.innerHTML += `<li name="${associates[index].id}">${associates[index].firstName} ${associates[index].lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
+		unaddedAssoc.innerHTML += `<li class="associateList" name="${associates[index].id}">${associates[index].firstName} ${associates[index].lastName}<input class="associateCheck" onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
 	}
 }
 
