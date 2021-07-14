@@ -4,6 +4,72 @@ let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
 const path = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
 
+const associateEmailInput = document.getElementById("emailInput");
+const associateFirstNameInput = document.getElementById("firstNameInput");
+const associateLastNameInput = document.getElementById("lastNameInput");
+
+
+async function createNewAssociate() {
+	associateEmailInput.classList.remove("is-invalid");
+	associateFirstNameInput.classList.remove("is-invalid");
+	associateLastNameInput.classList.remove("is-invalid");
+
+	if (isInputValid(associateEmailInput, associateFirstNameInput, associateLastNameInput)) {
+		const associateEmail = associateEmailInput.value;
+		associateEmailInput.value = "";
+
+		const associateFirstName = associateFirstNameInput.value;
+		associateFirstNameInput.value = "";
+
+		const associateLastName = associateLastNameInput.value;
+		associateLastNameInput.value = "";
+
+		const config = {
+			method: "POST",
+			mode: "cors",
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				"firstName": associateFirstName,
+				"lastName": associateLastName,
+				"email": associateEmail,
+				"trainingStatus": ""
+			})
+		};
+
+		const response = await fetch(path + "/associates", config);
+
+		if (response.status == 201) {
+			$('#newAssociateModal').modal('hide');
+			let result = await response.json();
+        		unaddedAssoc.innerHTML+=`<li name="${result.id}">${result.firstName} ${result.lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`
+		} else {
+			alert("There was an error while creating the associate");
+		}
+	} else {
+		return false;
+	}
+}
+
+
+function isInputValid(email, firstName, lastName) {
+	let valid = true;
+	if (!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(email.value)) {
+		email.classList.add("is-invalid");
+		valid = false;
+	}
+	if (!/[a-zA-Z]/.test(firstName.value)) {
+		firstName.classList.add("is-invalid");
+		valid = false;
+	}
+	if (!/[a-zA-Z]/.test(lastName.value)) {
+		lastName.classList.add("is-invalid");
+		valid = false;
+	}
+	return valid;
+}
+
 async function getAllAssociates() {
 	const config = {
 		method: "GET",
@@ -80,6 +146,6 @@ async function createBatch() {
 	//associates is the array of all the list items
 }
 
-search.addEventListener("onkeyup", filterList);
+search.addEventListener("keyup", filterList);
 submit.addEventListener("click", createBatch);
 document.addEventListener("DOMContentLoaded", getAllAssociates);
