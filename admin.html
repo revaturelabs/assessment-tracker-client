@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
      <!-- favicon Icon -->
-     <link href="../images/favicon.ico" rel="shortcut icon" />
+     <link href="images/favicon.ico" rel="shortcut icon" />
      <!-- Bootstrap CSS -->
      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
      <!-- Override CSS -->
@@ -39,20 +39,62 @@
             <a class="nav-link text-dark d-flex align-items-center justify-content-center justify-content-md-start" title="Home" href="home.html"><i class="fa fa-home" aria-hidden="true"></i>&nbsp;<span class="d-none d-md-inline">Home</span></a>
         </nav>
         <div id="mainbody" class="col col-10 col-md-10 mainbody bg-darker text-light p-5">
-            <input id="nameInput" type="text" placeholder="Name"></input>
-            <input id="trackInput" type="text" placeholder="Track"></input>
-            <input id="startDate" type="date" placeholder="StartDate"></input>
-            <input id="endDate" type="date" placeholder="endDate"></input>
-            <input type="text" placeholder="Search By Associate Name" id="searchAssociate" onkeyup="filterList()"></input>
-            <label for="unaddedAssociates">Unadded Associates</label>
-            <ul id="unaddedAssociates">
-            </ul>
-            <label for="addedAssociates">Added Associates</label>
-            <ul id="addedAssociates">
+            <div id="panels" class = "card bg-darker p-3">
+                <h3 class = "card-title text-center">
+                    <i class="fa fa-users" aria-hidden="true">
+                    </i>
+                    <strong>Create A Batch</strong>
+                </h3>
+                <div class="d-flex mb-5">
+                    <div id="createBatch" class="col col-12 p-0">
+                        <div class= "card bg-darker">
+                            <div class="card-body rounded">
+                                <div class = "d-flex flex-wrap justify-content-around">
+                                    <div class = "d-flex-inline-block flex fill">
+                                        <h3 class = "card-title">
+                                            <strong>Create A Batch</strong>
+                                        </h3>
+                                        <input id="nameInput" type="text" placeholder="Name"></input>
+                                        <input id="trackInput" type="text" placeholder="Track"></input>
+                                        <input id="startDate" type="date" placeholder="StartDate"></input>
+                                        <input id="endDate" type="date" placeholder="endDate"></input>
+                                        <input type="text" placeholder="Search By Associate Name" id="searchAssociate"></input>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex mb-5">
+                    <div id="addedAssociates" class="col col-12 p-0">
+                        <div class="card bg-darker">
+                            <div class="card-body rounded">
+                                <div class="d-flex flex-wrap justify-content-around">
+                                    <div class="d-flex-inline-block flex-fill">
+                                        <h3>Associates</h3>
+                                        <label for="unaddedAssociates">Unadded Associates</label>
+                                        <ul id="unaddedAssociates" class="d-inline-block card-text overflow-auto assess-panel col col-12">
+                                        </ul>
+                                    </div>
+                                    <div class="d-flex-inline-block flex-fill bg-darkest rounded p-3">
+                                        <h3>Added Associates</h3>
+                                        <label for="addedAssociates">added Associates</label>
+                                        <ul id="addedAssociates" class="card-text overflow-auto assess-panel">
+                                            
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="submitBatch" class="btn btn-info border-0 d-block">Submit</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="createAssociate" class="btn btn-secondary border-0 d-block">Create Associate</button>
 
-            </ul>
-            <button id="createAssociate">Create Associate</button>
-            <button id="submitBatch">Submit</button>
+            </div>
+            
         </div>
     </main>
     
