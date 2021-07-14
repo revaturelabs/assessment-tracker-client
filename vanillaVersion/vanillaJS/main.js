@@ -1,7 +1,6 @@
 const pythonUrl = "http://34.204.173.118:5000/";
 const javaUrl = "http://34.204.173.118:7001/";
 
-
 /*local cache*/
 let state = {};
 
