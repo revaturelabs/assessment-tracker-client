@@ -226,7 +226,7 @@ function displayAssessments(assessments){
         display += `<li class="m-2" id="assessment${assessment.assessmentId}">
         <a onclick="batch.currentWeek = ${assessment.weekId};
         batch.currentID = ${assessment.assessmentId};
-        document.getElementById('assessWeightTitle').innerHTML = '${assessment.assessmentTitle} Weight';
+        document.getElementById('Title').innerHTML = '${assessment.assessmentTitle} Weight';
         document.getElementById('weightControl').value = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;
         document.getElementById('weightValue').innerHTML = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;
         " id="assessment_${assessment.assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessment.assessmentTitle}</a>
@@ -426,12 +426,28 @@ async function createAssessment() {
     let response_loc = `week${thisWeekId}Assessments`;
     let load_loc = "batchLoader"+thisWeekId;
 
+    let defaultWeight = 0;
+    switch (Number(document.getElementById("assessment-type").value)) {
+        case 1:
+            defaultWeight = 100;
+            break;
+        case 2:
+            defaultWeight = 40;
+            break;
+        case 3:
+            defaultWeight = 60;
+            break;
+        case 4:
+            defaultWeight = 80;
+            break;
+    }
+
     let thisAssessment = {
         assessmentTitle: document.getElementById("assessment-title").value,
         typeId: Number(document.getElementById("assessment-type").value),
         batchId: Number(window.localStorage["batchId"]),
         weekId: document.getElementById("assessment-week").innerHTML,
-        assessmentWeight: 100,
+        assessmentWeight: defaultWeight,
         categoryId: 2
     }
     let jsonData = thisAssessment;
