@@ -244,7 +244,9 @@
                 </div>
             </div>
         </footer>
-
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create_note_modal" id="toggle_create_note_modal_btn">
+            Add Note
+        </button>
         <!-- Page HTML Code End -->
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -256,6 +258,33 @@
         <script src="javascript/main.js"></script>
         <!-- current Level JavaScript pre-production -->
         <script src="javascript/batch_home.js"></script>
-
+        <script>	
+            // temporary JS for get all notes
+            let notes = {};  
+            
+             async function getAllNotes(){
+                 const endpoint = `notes`;
+                 const url = base_url + endpoint;   
+                 const method = "GET";
+                 const cbFunction = function(...params){
+                     notes = JSON.parse(params[1]);
+                 }
+                 await ajaxCaller(method, url, cbFunction);
+             }
+ 
+             async function getAllNotes(associateId, week){
+                 await getNotes(associateId, week);
+             }
+ 
+             console.log(batch.currentWeek);
+ 
+             window.addEventListener("click", async (e) => {
+                 if(e.target.classList.contains("toggle_create_note_modal_btn")){
+                     console.log(e.target);
+                     const len = e.target.classList.length;
+                     console.log(e.target.classList[len-1]);
+                 }
+             }); 
+ </script>
 
 </html>

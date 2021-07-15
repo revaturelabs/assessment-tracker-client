@@ -157,7 +157,7 @@ function generateTable(week){
     //Associate name row
     tableInnards+=`</thead><tbody>`;
     for(let i = 0; i < associates.length; ++i) {
-        tableInnards+=`<tr><td id="associate-name-${i}">${associates[i].firstName}</td>`;
+        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" class="toggle_create_note_modal_btn ${associates[i].id}">${associates[i].firstName}</td>`;
         
         //Grade data
         let gradeTotal = 0;
@@ -752,7 +752,6 @@ function getScore_complete(status, response, response_loc, load_loc) {
         //load the response into the response_loc
         document.getElementById(load_loc).innerHTML = `<p class="text-danger">${response}</p>`;
     }
-    console.log(response);
 }
 function printAssociates(arrayData) {
     let display = "";
