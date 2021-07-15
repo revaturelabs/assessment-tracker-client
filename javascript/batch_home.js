@@ -426,12 +426,28 @@ async function createAssessment() {
     let response_loc = `week${thisWeekId}Assessments`;
     let load_loc = "batchLoader"+thisWeekId;
 
+    let defaultWeight = 0;
+    switch (Number(document.getElementById("assessment-type").value)) {
+        case 1:
+            defaultWeight = 100;
+            break;
+        case 2:
+            defaultWeight = 40;
+            break;
+        case 3:
+            defaultWeight = 60;
+            break;
+        case 4:
+            defaultWeight = 80;
+            break;
+    }
+
     let thisAssessment = {
         assessmentTitle: document.getElementById("assessment-title").value,
         typeId: Number(document.getElementById("assessment-type").value),
         batchId: Number(window.localStorage["batchId"]),
         weekId: document.getElementById("assessment-week").innerHTML,
-        assessmentWeight: 100,
+        assessmentWeight: defaultWeight,
         categoryId: 2
     }
     let jsonData = thisAssessment;
