@@ -21,8 +21,15 @@ let batch = {
     totalWeeks: 0
 }
 let assesssments = new Object();
+//Table variables
 let associates = new Object();
 let assessmentsArr = [];
+//gradeCache[current week][associate index][assessment index] = current grade
+let curWeek = 2;
+let gradeCache = null;
+let prevActiveTableCellDOM = null;
+let assessmentIDToTableCol = null;
+let associateIDToTableRow = null;
 
 
 function pageDataToLoad() {
@@ -49,19 +56,146 @@ function pageDataToLoad() {
 }
 const panels = document.getElementById("panels");
 
-async function generateTable(week){
-    
-    let tableInnards = `<table><thead><tr>Associate Name</tr>`;
+async function generateGradeCache(week) {
+    //Exit if cache has already been made
+    if(gradeCache[week]) return;
 
-    for(let i = 0; i < assessmentsArr[2]; ++i) {
-        tableInnards+=`<tr>${assessmentsArr[2][i].title}</tr>`;
+    gradeCache[week] = new Array(associates.length);
+    assessmentIDToTableCol[week] = new Map();
+    associateIDToTableRow[week] = new Map();
+    for(let i = 0; i < associates.length; ++i) {
+        associateIDToTableRow[week].set(associates[i].id, i);
+        //Skip if no assessments exist
+        if(!assessmentsArr[week]) continue;
+
+        gradeCache[week][i] = new Array(assessmentsArr[week].length);
+        for(let j = 0; j < assessmentsArr[week].length; ++j) {
+            //Start with invalid score this gets reset to a vaild value if a score is found
+            gradeCache[week][i][j] = "-";
+            assessmentIDToTableCol[week].set(assessmentsArr[week][j].assessmentId, j);
+            await getScore(assessmentsArr[week][j].assessmentId, associates[i].id, null, null);
+        }
     }
+}
+function addGradeCacheCol(week) {
+    //Add new row to compensate for new assessment created
+    for(let i = 0; i < associates.length; ++i) {
+        if(!gradeCache[week][i]) gradeCache[week][i] = [];
+        gradeCache[week][i].push("-");
+    }
+}
+function getUpdateScoreInnerHTML(item) {
+    return `
+    <form id="GiveScoreForm${item.assessmentId}" class="needs-validation" novalidate autocomplete="off">
+        <div id="scoreFormElem${item.assessmentId}">
+            <div class="form-group">
+                <label for="score${item.assessmentId}">${item.assessmentTitle}</label>
+                <input placeholder="Please type a score out of 100%" type="number" step="0.01" min="0.01" max="100" class="form-control" id="score${item.assessmentId}" name="score${item.assessmentId}" required>
+                <div class="invalid-feedback">
+                    Please type a valid Score percentage out of 100%.
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <span id="loadScoreResult${item.assessmentId}"></span><span id="ScoreLoad${item.assessmentId}"></span>
+            <button onclick="let form = document.getElementById('GiveScoreForm${item.assessmentId}');
+            if (form.checkValidity() === true) {
+                batch.currentScores = new Object();
+                UpdateScores(document.getElementById('score${item.assessmentId}').value,${item.assessmentId},'loadScoreResult${item.assessmentId}','ScoreLoad${item.assessmentId}');
+            }" type="submit" class="btn btn-info">Save &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+        </div>
+    </form>`;
+}
+function generateTable(week){
+    //Empty assessment list
+    const buttonHTML = `<button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+    class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
+       <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
+   </button>`;
+    if(!assessmentsArr[week]) {
+        document.getElementById("mainbody").innerHTML = "-No Assessments Yet-" + buttonHTML;
+        return;
+    }
+    let tableInnards = `
+    <table class="table table-dark table-striped table-hover">
+        <thead>
+            <th>Associate Name</th>
+    `;
+    //Assessment columns
+    for(let i = 0; i < assessmentsArr[week].length; ++i) {
+        tableInnards+=`
+        <th id="assessment-name-${i}"><a onclick="
+        batch.currentWeek = ${assessmentsArr[week][i].weekId};
+        batch.currentID = ${assessmentsArr[week][i].assessmentId};
+        document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
+        document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
+        document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
+        " id="assessment_${assessmentsArr[week][i].assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessmentsArr[week][i].assessmentTitle}</a>
+        </th>`;
+        
+    }
+    tableInnards+=`<th>Totals</th>`;
+
+    //Associate name row
     tableInnards+=`</thead><tbody>`;
-    for(associate of associates){
-        tableInnards+=`<tr><td>${associate.firstName}<td>0</td><td>0</td><td>0</td></tr>`;
+    for(let i = 0; i < associates.length; ++i) {
+        tableInnards+=`<tr><td id="associate-name-${i}">${associates[i].firstName}</td>`;
+        
+        //Grade data
+        let gradeTotal = 0;
+        for(let j = 0; j < assessmentsArr[week].length; ++j) {
+            //tableInnards+=`<td id="grade-data-${i}-${j}">${gradeCache[week][i][j]}</td>`;
+            tableInnards +=
+            `<td><a id="grade-data-${i}-${j}" onclick="batch.currentAssoc = ${associates[i].id};
+            batch.currentWeek = ${week};
+            printWeekAssess(${week});
+            document.getElementById('assessScoreTitle').innerHTML = 'Week '+ ${week};
+            document.getElementById('studentName').innerHTML = '${associates[i].firstName}';
+            " data-toggle="modal" href="#giveScores">${gradeCache[week][i][j]}</a></td>`;
+
+            if(gradeCache[week][i][j] !== "-") gradeTotal += gradeCache[week][i][j];
+        }
+        tableInnards += `<td>${gradeTotal}</td></tr>`;
     }
-    tableInnards+=`</tbody></table>`;
+
+    //Averages row
+    tableInnards+=`<tr><td>Average</td>`;
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        //BUG - calc average
+        tableInnards+=`<td>Average ${j+1}</td>`;
+    }
+    //Finalize table html
+    tableInnards += `<td></td></tr></tbody></table>`;
+    tableInnards += buttonHTML;
     document.getElementById("mainbody").innerHTML=tableInnards;
+
+    //Once InnerHTML is done set click events
+    
+    //Assessment Cell Click events
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        const curAssessCellDOM = document.getElementById(`assessment-name-${j}`);
+        curAssessCellDOM.addEventListener('click', (e) => {
+            if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
+            curAssessCellDOM.className = "table-active";
+            prevActiveTableCellDOM = curAssessCellDOM;
+        });
+    }
+    //Grade Cell Click events
+    for(let i = 0; i < associates.length; ++i) {
+        for(let j = 0; j < assessmentsArr[week].length; ++j) {
+            const curGradeCellDOM = document.getElementById(`grade-data-${i}-${j}`);
+            curGradeCellDOM.addEventListener('click', (e) => {
+                if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
+                //BUG - Add styling if needed for active cells
+                curGradeCellDOM.className = "table-active";
+                prevActiveTableCellDOM = curGradeCellDOM;
+                //BUG - Enable user to edit score
+                document.getElementById("scoreForms").innerHTML = getUpdateScoreInnerHTML(assessmentsArr[week][j]);
+                newGenForms();
+            });
+        }
+    }
 }
 
 async function addWeek(totalWeeks) {
@@ -89,7 +223,14 @@ function displayAssessments(assessments){
         assesssments["assessment"+assessment.assessmentId] = assessment;
         tempObj["assessment"+assessment.assessmentId] = assesssments["assessment"+assessment.assessmentId];
         batch["week"+assessment.weekId] = tempObj;
-        display += `<li class="m-2" id="assessment${assessment.assessmentId}"><a onclick="batch.currentWeek = ${assessment.weekId};batch.currentID = ${assessment.assessmentId};document.getElementById('assessWeightTitle').innerHTML = '${assessment.assessmentTitle} Weight';document.getElementById('weightControl').value = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;document.getElementById('weightValue').innerHTML = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;" id="assessment_${assessment.assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessment.assessmentTitle}</a></li>`;
+        display += `<li class="m-2" id="assessment${assessment.assessmentId}">
+        <a onclick="batch.currentWeek = ${assessment.weekId};
+        batch.currentID = ${assessment.assessmentId};
+        document.getElementById('assessWeightTitle').innerHTML = '${assessment.assessmentTitle} Weight';
+        document.getElementById('weightControl').value = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;
+        document.getElementById('weightValue').innerHTML = batch.week${assessment.weekId}.assessment${assessment.assessmentId}.assessmentWeight;
+        " id="assessment_${assessment.assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessment.assessmentTitle}</a>
+        </li>`;
     });
     console.log(batch);
     return display
@@ -123,32 +264,19 @@ function newWeek(week) {
     </div>`;
 }//Get all Current Assessments for a Week
 async function getAssessmentsForWeek(weekId) {
-    
     let response_func = getAssessmentsForWeekComplete;
-   
     let endpoint =  `batches/${window.localStorage["batchId"]}/weeks/${weekId}/assessments`
-
     let url = java_base_url + endpoint;
-    console.log(url)
-   
     let request_type = "GET";
-    
     let response_loc = `mainbody`;
-    
     let load_loc = "batchLoader"+weekId;
-    
     let jsonData = "";
-
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
-    
     if (status == 200) {
-        assessmentsArr[2] = JSON.parse(response);
-        generateTable(2)
-        console.log(res);
-       
+        assessmentsArr[curWeek] = JSON.parse(response); 
     }
 }
 
@@ -258,16 +386,30 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         response_loc = jsonHolder;
         batch = response_loc;
         //await addWeek(batch.totalWeeks);
-        //await getAssociates();
-       // await getAssessmentsForWeek(2);
-
+        //Set inital cache week size if it wasnt set before
+        if(!gradeCache) {
+            await getAssociates();
+            gradeCache = new Array(batch.totalWeeks+1);
+            assessmentIDToTableCol = new Array(batch.totalWeeks+1);
+            associateIDToTableRow = new Array(batch.totalWeeks+1);
+            assessmentsArr = new Array(batch.totalWeeks+1);
+        }
+        //Get assessments for the week if we didnt already
+        if(!gradeCache[curWeek]) {
+            //Do week 2 by default
+            await getAssessmentsForWeek(curWeek);
+            await generateGradeCache(curWeek);
+        }
+        generateTable(curWeek); 
+        
         //action if code 201
     } else if(status == 201) {
         document.getElementById(response_loc).innerHTML = JSON.parse(response);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
-        document.getElementById(response_loc).innerHTML = response;
+        let responseDOM = document.getElementById(response_loc);
+        if(responseDOM) responseDOM.innerHTML = response;
     }
 }
 
@@ -302,17 +444,26 @@ async function createAssessment() {
 function createAssessment_complete(status, response, response_loc, load_loc) {
     //action if code 200
     if(status == 200) {
+        //let newJson = JSON.parse(response)
         //load the response into the response_loc
-        let newJson = JSON.parse(response)
-        console.log([newJson]);
-        if(document.getElementById(response_loc).innerHTML == "-No Assessments Yet-") {
+        /*if(document.getElementById(response_loc).innerHTML == "-No Assessments Yet-") {
             document.getElementById(response_loc).innerHTML = displayAssessments([newJson]);
         } else {
             document.getElementById(response_loc).innerHTML += displayAssessments([newJson]);
-        }
+        }*/
+
+        
         //action if code 201
     } else if(status == 201) {
-        document.getElementById(response_loc).innerHTML = JSON.parse(response);
+        //document.getElementById(response_loc).innerHTML = JSON.parse(response);
+        //Update our table
+        let newJson = JSON.parse(response)
+        if(!assessmentsArr[curWeek]) assessmentsArr[curWeek] = [];
+        let j = assessmentsArr[curWeek].length;
+        assessmentsArr[curWeek].push(newJson);
+        assessmentIDToTableCol[curWeek].set(newJson.assessmentId, j);
+        addGradeCacheCol(curWeek);
+        generateTable(curWeek); 
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
@@ -336,8 +487,10 @@ async function updateWeight(weekID, assessID, weight) {
     //"GET", "POST", "OPTIONS", "PATCH", "PULL", "PUT", "HEAD", "DELETE", "CONNECT", "TRACE"
     let request_type = "PATCH";
     //location you want the response to load
-    batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight = weight;
-    let response_loc = batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight;
+    //batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight = weight;
+    let i = assessmentIDToTableCol[weekID].get(assessID);
+    assessmentsArr[weekID][i].assessmentWeight = weight;
+    let response_loc = weight; //batch[`week${weekID}`][`assessment${assessID}`].assessmentWeight;
     //optional:location you want the load animation to be generated while awaiting the response
     //can be set for any location but will most often be set to response_loc
     //can be left blank if not needed
@@ -413,11 +566,10 @@ function getAssociates_complete(status, response, response_loc, load_loc) {
     //-- you want a message to say "ajax done!" in a popup while the data is compiled and loaded somewhere else
 
     //action if code 200
-    if (status == 200) {
-        let responseParsed = JSON.parse(response);
-        console.log(responseParsed);
-        loadinfoByClass(response_loc, printAssociates(responseParsed));
 
+    if (status == 200) {
+        associates = JSON.parse(response);
+        loadinfoByClass(response_loc, printAssociates(associates));
         //action if code 201
     } else if (status == 201) {
         associates = JSON.parse(response);
@@ -474,11 +626,15 @@ function UpdateScores_complete(status, response, response_loc, load_loc) {
 
     //action if code 200
     if (status == 200) {
-        console.log(JSON.parse(response));
-        if(response) {
+        const updatedGrade = JSON.parse(response);
+        if(updatedGrade) {
             document.getElementById(response_loc).innerHTML = `<p class="text-success">Your grade was saved!</p>`;
+            //Update table cell
+            let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
+            let j = assessmentIDToTableCol[curWeek].get(updatedGrade.assessmentId);
+            gradeCache[curWeek][i][j] = updatedGrade.score;
+            document.getElementById(`grade-data-${i}-${j}`).innerText = gradeCache[curWeek][i][j];
         }
-
         //action if code 201
     } else if (status == 201) {
         document.getElementById(response_loc).innerHTML = `<p class="text-success">${response}</p>`;
@@ -531,7 +687,12 @@ function getScore_complete(status, response, response_loc, load_loc) {
     //action if code 200
     if (status == 200) {
         if(response != null) {
-            document.getElementById(response_loc).value = JSON.parse(response).score;
+            const grade = JSON.parse(response);
+            const scoreDOM = document.getElementById(response_loc);
+            if(scoreDOM) scoreDOM.value = grade.score;
+            let i = associateIDToTableRow[curWeek].get(grade.associateId);
+            let j = assessmentIDToTableCol[curWeek].get(grade.assessmentId);
+            gradeCache[curWeek][i][j] = grade.score;
         }
 
         //action if code 201
@@ -540,7 +701,8 @@ function getScore_complete(status, response, response_loc, load_loc) {
         //action if code 400
     } else if (status == 404) {
         //load the response into the response_loc
-        document.getElementById(load_loc).innerHTML = `<p class="text-danger">${response}</p>`;
+        const loadDOM = document.getElementById(load_loc);
+        if(loadDOM) loadDOM.innerHTML = `<p class="text-danger">${response}</p>`;
     } else if (status == 0) {
         //load the response into the response_loc
         document.getElementById(load_loc).innerHTML = `<p class="text-danger">${response}</p>`;
@@ -556,12 +718,12 @@ function printAssociates(arrayData) {
 }
 //print all the tests that can have a score given to them
 function printWeekAssess(weekID) {
-    console.log(batch["week"+weekID]);
     //resets the form element
     batch.loadScores = new Object();
     let display = "";
     document.getElementById("scoreForms").innerHTML = display;
-    $.each(batch["week"+weekID],(index,item) => {
+    //$.each(batch["week"+weekID],(index,item) => {
+    $.each(assessmentsArr[weekID],(index,item) => {
         if(weekID == item.weekId){
             batch.loadScores[`score${item.assessmentId}`] = new Object();
             batch.loadScores[`score${item.assessmentId}`].assessmentId = item.assessmentId;
