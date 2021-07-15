@@ -781,3 +781,30 @@ function executePreLoadScores() {
         getScore(item.assessmentId,item.associateId,item.response_loc,item.load_loc);
     });
 }
+
+function checkValid(){
+    let form = document.getElementById('createAssessmentForm');
+    if (form.checkValidity() === true) {
+        createAssessment();
+    }
+}
+
+async function newCategory(){
+    let request_type = "POST";
+    let endpoint = `categories`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'text': document.getElementById("create_assessment_button").innerHTML};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+}
+
+function newCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        JSON.parse(response)
+    }
+    if(status === 404){
+        document.getElementById(response_loc).innerHTML = response;
+    }
+}
