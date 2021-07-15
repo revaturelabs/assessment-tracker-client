@@ -1,9 +1,11 @@
 const unaddedAssoc = document.getElementById("unaddedAssociates");
 const addedAssoc = document.getElementById("addedAssociates");
+const trainerInput = document.getElementById("batchTrainer");
+const coTrainerInput = document.getElementById("batchCoTrainer");
 let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
 const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
-const bucketPath = "https://adam-ranieri-batch-1019.s3.amazonaws.com"
+const bucketPath = "http://adam-ranieri-batch-1019.s3.amazonaws.com"
 
 const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
@@ -79,6 +81,40 @@ function isInputValid(email, firstName, lastName) {
 	return valid;
 }
 
+function validateBatchInfo(name, track, trainer, cotrainer, startDate, endDate){
+	
+	if(name === "" | track==="" | trainer === "" | cotrainer === "" | endDate === ""){
+		return false;
+	} 
+
+	if(
+		!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]/.test(name) | 
+		!/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]/.test(track)
+	){ return false;}
+
+	if(trainer === cotrainer) return false;
+
+	if(startDate > endDate) return false;
+
+	return true;
+}
+
+async function getAllTrainers(){
+	const config = {
+		method: "GET"
+	};
+	const response = await fetch(pythonPath + "/trainers", config);
+	if(response.status===200){
+		const trainers = await response.json();
+		for(trainer of trainers){
+			if(!trainer.admin){
+				trainerInput.innerHTML += `<option name="${trainer.id}">${trainer.firstName} ${trainer.lastName}</option>`;
+				coTrainerInput.innerHTML += `<option name="${trainer.id}">${trainer.firstName} ${trainer.lastName}</option>`; 
+			}
+		}
+	}
+}
+
 async function getAllAssociates() {
 	const config = {
 		method: "GET",
@@ -119,6 +155,18 @@ async function createBatch() {
 	const end = document.getElementById("endDate").value;
 	const startDate = new Date(start).getTime() / 1000;
 	const endDate = new Date(end).getTime() / 1000;
+	const trainerOption = trainerInput.options;
+	const cotrainerOption = coTrainerInput.options;
+	const trainerId = trainerOption[trainerInput.selectedIndex];
+	const cotrainerId = cotrainerOption[coTrainerInput.selectedIndex];
+	let associateStatus = 200;
+	let trainerStatus = 200;
+
+	// checks values for input errors
+	const goAhead = validateBatchInfo(nameInput, trackInput, trainerInput, coTrainerInput, startDate, endDate);
+	if(!goAhead){
+		return alert("Problem with one or more fields");	
+	}
 	const req = {
 		name: nameInput,
 		trainingTrack: trackInput,
@@ -135,24 +183,75 @@ async function createBatch() {
 	const resp = await fetch(pythonPath + "/batches", config);
 	if (resp.status == 201) {
 		const batchId = Number(await resp.json());
-		const associates = addedAssoc.children;
-		for (associate of associates) {
-			const assocId = associate.getAttribute("name");
-			const body = {
-				associateId: assocId,
-				batchId: batchId,
-			};
-			const config = {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(body),
-			};
-			const resp = await fetch(pythonPath + "/associates/register", config);
-			console.log(resp.status);
+		const associateStatus = registerAssociatesToBatch(batchId);
+		const leadStatus = registerTrainerToBatch(trainerId, batchId, "Lead");
+		const coLeadStatus = registerTrainerToBatch(cotrainerId, batchId, "Co-lead");
+		trainerStatus = leadStatus && coLeadStatus;
+		
+		if(associateStatus & trainerStatus){
+			alert("Batch created Successfully");
+			nameInput = "";
+			trackInput = "";
+			end = "";
 		}
+		else{
+			alert("Batch Was not created Successfully");
+		}
+		
+		
+	} 
+	else {
+		alert("Something went wrong.");
 	}
+}
 
 	//associates is the array of all the list items
+
+
+async function registerAssociatesToBatch(batchId){
+	console.log("I am in the register Associates Fuction");
+	const associates = addedAssoc.children;
+	for (associate of associates) {
+		const assocId = associate.getAttribute("name");
+		const body = {
+			associateId: assocId,
+			batchId: batchId,
+		};
+		const config = {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		};
+		const res = await fetch(pythonPath + "/associates/register", config);
+		if(res.status !== 201){
+			alert(`Adding the trainers or the associates with id ${await res.json().id}`);
+			return false;
+		}
+		else return true;
+	}
+}
+
+async function registerTrainerToBatch(trainerId, batchId, trainerRole){
+	console.log(" I am in the register Trainer Function");
+	const trainerReq = {
+		trainerId: trainerId,
+		batchId: batchId,
+		trainerRole: trainerRole
+	}
+
+	const trainerConfig = {
+		method: "POST",
+		headers: {"Content-Type": "application/json"},
+		body: JSON.stringify(trainerReq)
+	};
+
+	const res = await fetch(pythonPath + "/trainers/register", trainerConfig);
+	if(res.status !== 201){
+		alert("issue adding trainer");
+		return false;
+	}
+	else return true;
+
 }
 
 function wipeStorage() {
@@ -181,3 +280,4 @@ search.addEventListener("keyup", filterList);
 submit.addEventListener("click", createBatch);
 document.addEventListener("DOMContentLoaded", getAllAssociates);
 document.addEventListener("DOMContentLoaded", setStartDate);
+document.addEventListener("DOMContentLoaded", getAllTrainers);
