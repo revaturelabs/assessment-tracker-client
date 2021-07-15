@@ -185,14 +185,19 @@ function generateTable(week){
         let gradeTotal = 0;
         for(let j = 0; j < assessmentsArr[week].length; ++j) {
             //tableInnards+=`<td id="grade-data-${i}-${j}">${gradeCache[week][i][j]}</td>`;
-            tableInnards +=
+            /*tableInnards +=
             `<td><a id="grade-data-${i}-${j}" onclick="batch.currentAssoc = ${associates[i].id};
             batch.currentWeek = ${week};
             printWeekAssess(${week});
             document.getElementById('assessScoreTitle').innerHTML = 'Week '+ ${week};
             document.getElementById('studentName').innerHTML = '${associates[i].firstName}';
             " data-toggle="modal" href="#giveScores">${gradeCache[week][i][j]}</a></td>`;
-
+            */
+            tableInnards += `
+            <td id="grade-data-${i}-${j}">
+                <input type="number" class="form-control" placeholder="${gradeCache[week][i][j]}">
+            </td>
+            `;
             if(gradeCache[week][i][j] !== "-") gradeTotal += gradeCache[week][i][j];
         }
         tableInnards += `<td>${gradeTotal}</td></tr>`;
