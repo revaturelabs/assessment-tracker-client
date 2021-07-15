@@ -55,7 +55,29 @@ function pageDataToLoad() {
     }
 }
 const panels = document.getElementById("panels");
-
+async function getBatchGradesForWeek(week) {
+    let response_func = getBatchGradesForWeekComplete;
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = `table-container`;
+    let load_loc = "table-container";
+    let jsonData = "";
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+function getBatchGradesForWeekComplete(status, response, response_loc, load_loc) {
+    if(status === 200) {
+        generateGradeCache(curWeek);
+        const gradesForWeek = JSON.parse(response);
+        console.log(gradesForWeek);
+        for(let g = 0; g < gradesForWeek.length; ++g) {
+            let i = associateIDToTableRow[curWeek].get(gradesForWeek[g].associateId);
+            let j = assessmentIDToTableCol[curWeek].get(gradesForWeek[g].assessmentId);
+            //Skip grades that are outside of our table bounds (page refresh will resize the cache)
+            if(i && j) gradeCache[curWeek][i][j] = gradesForWeek[g].score;
+        }
+    }
+}
 async function generateGradeCache(week) {
     //Exit if cache has already been made
     if(gradeCache[week]) return;
@@ -73,7 +95,7 @@ async function generateGradeCache(week) {
             //Start with invalid score this gets reset to a vaild value if a score is found
             gradeCache[week][i][j] = "-";
             assessmentIDToTableCol[week].set(assessmentsArr[week][j].assessmentId, j);
-            await getScore(assessmentsArr[week][j].assessmentId, associates[i].id, null, null);
+            //await getScore(assessmentsArr[week][j].assessmentId, associates[i].id, null, null);
         }
     }
 }
@@ -288,7 +310,7 @@ async function getAssessmentsForWeek(weekId) {
     let response_loc = `mainbody`;
     let load_loc = "batchLoader"+weekId;
     let jsonData = "";
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
@@ -423,10 +445,10 @@ async function batchData_complete(status, response, response_loc, load_loc) {
             //Disable for now until week 1 is loaded by default
             dropdownDOM.disabled = true;
         }
-        //Get assessments for the week if we didnt already
+        //Get assessments and grades for the week if we didnt already
         if(!gradeCache[curWeek]) {
             await getAssessmentsForWeek(curWeek);
-            await generateGradeCache(curWeek);
+            await getBatchGradesForWeek(curWeek);
         }
         generateTable(curWeek); 
         dropdownDOM.disabled = false;
