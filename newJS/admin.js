@@ -2,23 +2,12 @@ const unaddedAssoc = document.getElementById("unaddedAssociates");
 const addedAssoc = document.getElementById("addedAssociates");
 let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
-const path = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
+const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
+const bucketPath = "https://adam-ranieri-batch-1019.s3.amazonaws.com"
 
 const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
 const associateLastNameInput = document.getElementById("lastNameInput");
-
-let tempMainContentHolder = $("#mainbody").html();
-let mustLogin = `
-<div class="col-sm-1-10">
-    <div class="card mb-5 bg-darker p-3">
-        <div class="card-body rounded p-3">
-            <h3 class="card-title"><strong>Please Log In</strong></h3>
-            <p class="">If you would like to view your batches then please <a data-toggle="modal" href="#loginModal">Log In Here</a>, or you may click the link above.</p>
-        </div>
-    </div>
-</div>`;
-
 
 async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
@@ -55,7 +44,7 @@ async function createNewAssociate() {
 			}),
 		};
 
-		const response = await fetch(path + "/associates", config);
+		const response = await fetch(pythonPath + "/associates", config);
 
 		if (response.status == 201) {
 			$("#newAssociateModal").modal("hide");
@@ -94,7 +83,7 @@ async function getAllAssociates() {
 	const config = {
 		method: "GET",
 	};
-	const response = await fetch(path + "/associates", config);
+	const response = await fetch(pythonPath + "/associates", config);
 	const associates = await response.json();
 	for (index in associates) {
 		unaddedAssoc.innerHTML += `<li name="${associates[index].id}">${associates[index].firstName} ${associates[index].lastName}<input onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
@@ -143,7 +132,7 @@ async function createBatch() {
 		body: JSON.stringify(req),
 	};
 
-	const resp = await fetch(path + "/batches", config);
+	const resp = await fetch(pythonPath + "/batches", config);
 	if (resp.status == 201) {
 		const batchId = Number(await resp.json());
 		const associates = addedAssoc.children;
@@ -158,7 +147,7 @@ async function createBatch() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(body),
 			};
-			const resp = await fetch(path + "/associates/register", config);
+			const resp = await fetch(pythonPath + "/associates/register", config);
 			console.log(resp.status);
 		}
 	}
@@ -172,11 +161,7 @@ function wipeStorage() {
 
 // logout function
 function logout(){
-    $("#loginBtn").html(`Log In&nbsp;<i class="fa fa-sign-in" aria-hidden="true"></i>`);
-    document.getElementById("loginBtn").setAttribute("data-target", "#loginModal");
-    tempMainContentHolder = $("#mainbody").html();
-    $("#mainbody").html(mustLogin);
-    loginData = new Object();
+	document.location = bucketPath + "/home.html"
 }
 
 //sets startDate to today's date
