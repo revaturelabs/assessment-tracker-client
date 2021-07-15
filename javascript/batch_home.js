@@ -25,7 +25,7 @@ let assesssments = new Object();
 let associates = new Object();
 let assessmentsArr = [];
 //gradeCache[current week][associate index][assessment index] = current grade
-let curWeek = 2;
+let curWeek = 1;
 let gradeCache = null;
 let prevActiveTableCellDOM = null;
 let assessmentIDToTableCol = null;
@@ -107,14 +107,31 @@ function getUpdateScoreInnerHTML(item) {
         </div>
     </form>`;
 }
+function generateDropdownHTML(numWeeks) {
+    let dropdownHTML = `
+    <div class="form-group">
+        <label for="week-num" class="col-form-label h3">Current Week:</label>
+        <select class="form-control form-control-lg h-50" id="week-num" required>
+        `;
+
+    for(let i = 0; i < numWeeks; ++i) {
+        if(i+1 === curWeek) dropdownHTML += `<option value="${i+1}" selected="selected">Week ${i+1}</option>`;
+        else dropdownHTML += `<option value="${i+1}">Week ${i+1}</option>`;
+    }
+    dropdownHTML += `</select></div>`;
+    dropdownHTML += `<div id="table-container"></div>`;
+    return dropdownHTML;
+}
 function generateTable(week){
-    //Empty assessment list
+    //Setup
+    const tableContainerDOM = document.getElementById("table-container");
     const buttonHTML = `<button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
     class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
        <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
    </button>`;
+   //Empty assessment list
     if(!assessmentsArr[week]) {
-        document.getElementById("mainbody").innerHTML = "-No Assessments Yet-" + buttonHTML;
+        tableContainerDOM.innerHTML = "-No Assessments Yet-" + buttonHTML;
         return;
     }
     let tableInnards = `
@@ -168,7 +185,7 @@ function generateTable(week){
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
     tableInnards += buttonHTML;
-    document.getElementById("mainbody").innerHTML=tableInnards;
+    tableContainerDOM.innerHTML=tableInnards;
 
     //Once InnerHTML is done set click events
     
@@ -386,6 +403,7 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         response_loc = jsonHolder;
         batch = response_loc;
         //await addWeek(batch.totalWeeks);
+        let dropdownDOM = document.getElementById("week-num");
         //Set inital cache week size if it wasnt set before
         if(!gradeCache) {
             await getAssociates();
@@ -393,14 +411,25 @@ async function batchData_complete(status, response, response_loc, load_loc) {
             assessmentIDToTableCol = new Array(batch.totalWeeks+1);
             associateIDToTableRow = new Array(batch.totalWeeks+1);
             assessmentsArr = new Array(batch.totalWeeks+1);
+            document.getElementById("mainbody").innerHTML = generateDropdownHTML(gradeCache.length);
+            dropdownDOM = document.getElementById("week-num");
+            dropdownDOM.addEventListener('input', (e) => {
+                e.preventDefault();
+                curWeek = Number(e.target.value);
+                //Disable this element until the table is fully loaded
+                dropdownDOM.disabled = true;
+                batchData(batch.id, batch);
+            });
+            //Disable for now until week 1 is loaded by default
+            dropdownDOM.disabled = true;
         }
         //Get assessments for the week if we didnt already
         if(!gradeCache[curWeek]) {
-            //Do week 2 by default
             await getAssessmentsForWeek(curWeek);
             await generateGradeCache(curWeek);
         }
         generateTable(curWeek); 
+        dropdownDOM.disabled = false;
         
         //action if code 201
     } else if(status == 201) {
