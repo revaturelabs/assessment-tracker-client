@@ -158,7 +158,8 @@ async function ajaxCaller(request_type, url, response_func, response_loc, load_l
     let response_holder = await response.text();
 
     //Reset loader
-    document.getElementById(load_loc).innerHTML = "";
+    const loaderDom = document.getElementById(load_loc);
+    if(loaderDom) loaderDom.innerHTML = "";
 
     //send the response to this function
     //response_func(this.status, response_holder, response_loc, load_loc);
