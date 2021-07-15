@@ -1,0 +1,13 @@
+.associateList{
+    border-bottom: 1px rgba(94, 83, 77, 0.418) solid;
+}
+
+ul {
+    list-style-type: none;
+}
+
+.associateCheck{
+    float: right;
+    margin-top: 5px;
+    margin-right: 5px;
+}
