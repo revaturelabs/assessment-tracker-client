@@ -172,7 +172,7 @@ async function logMeIN(email) {
     //naming convention: [this function name]_complete
     let response_func = logMeIN_complete;
     //endpoint: rest api endpoint
-    let endpoint = "trainers"
+    let endpoint = "login"
     //set the url by adding (base_url/java_base_url) + endpoint
     //options:
     //base_url(python)
