@@ -2,7 +2,8 @@ const unaddedAssoc = document.getElementById("unaddedAssociates");
 const addedAssoc = document.getElementById("addedAssociates");
 let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
-const path = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
+const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
+const bucketPath = "https://adam-ranieri-batch-1019.s3.amazonaws.com"
 
 const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
@@ -43,7 +44,7 @@ async function createNewAssociate() {
 			}),
 		};
 
-		const response = await fetch(path + "/associates", config);
+		const response = await fetch(pythonPath + "/associates", config);
 
 		if (response.status == 201) {
 			$("#newAssociateModal").modal("hide");
@@ -82,7 +83,7 @@ async function getAllAssociates() {
 	const config = {
 		method: "GET",
 	};
-	const response = await fetch(path + "/associates", config);
+	const response = await fetch(pythonPath + "/associates", config);
 	const associates = await response.json();
 	for (index in associates) {
 		unaddedAssoc.innerHTML += `<li class="associateList" name="${associates[index].id}">${associates[index].firstName} ${associates[index].lastName}<input class="associateCheck" onclick="clickAssociate(this.parentElement)" type="checkbox"></li>`;
@@ -131,7 +132,7 @@ async function createBatch() {
 		body: JSON.stringify(req),
 	};
 
-	const resp = await fetch(path + "/batches", config);
+	const resp = await fetch(pythonPath + "/batches", config);
 	if (resp.status == 201) {
 		const batchId = Number(await resp.json());
 		const associates = addedAssoc.children;
@@ -146,12 +147,21 @@ async function createBatch() {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify(body),
 			};
-			const resp = await fetch(path + "/associates/register", config);
+			const resp = await fetch(pythonPath + "/associates/register", config);
 			console.log(resp.status);
 		}
 	}
 
 	//associates is the array of all the list items
+}
+
+function wipeStorage() {
+    sessionStorage.clear();
+}
+
+// logout function
+function logout(){
+	document.location = bucketPath + "/home.html"
 }
 
 //sets startDate to today's date
