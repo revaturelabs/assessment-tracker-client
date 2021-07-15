@@ -31,6 +31,10 @@ let onAssess = offPage;
 let onNotes = offPage;
 
 batchButtonCounter = 0;
+
+if(sessionStorage.getItem("isAdmin")){
+    window.location.href = "admin.html";
+}
 // Chapter 1. Global var Declarations End -----------------
 
 // Chapter 2. Ajax ----------------------------------------
