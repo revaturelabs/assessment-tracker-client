@@ -165,13 +165,21 @@
                                 <div class="form-group">
                                     <label for="assessment-title" class="col-form-label h3">Title:</label>
                                     <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Python Quiz" maxlength=25 class="form-control form-control-lg h-50" id="assessment-title" required />
+
+                                    <label for="category-type" class="col-form-label h3">Category Type:</label>
+                                    <select class="form-control form-control-lg h-50" id="category-select"></select>
+
+                                    <label for="new-category" class="col-form-label h3">New Category:</label>
+                                    <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Automation" maxlength=25 class="form-control form-control-lg h-50" id="new-category" /><br />
+                                    
+                                    <button id="create_assessment_button" onclick="newCategory()" type="submit" class="btn btn-info">Create Category &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
                                     <div class="invalid-feedback">
                                         Please enter a valid Title.
                                     </div>
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadAssessResult"><span id="assessLoad"></span></span>
-                                    <button id="create_assessment_button" onclick="let form = document.getElementById('createAssessmentForm');if (form.checkValidity() === true) {createAssessment();}" type="submit" class="btn btn-info">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
+                                    <button id="create_assessment_button" onclick="checkValid()" type="submit" class="btn btn-info">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
                                     <button id="close_assessment_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                             </form>
@@ -244,7 +252,6 @@
                 </div>
             </div>
         </footer>
-
         <!-- Page HTML Code End -->
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -256,6 +263,4 @@
         <script src="javascript/main.js"></script>
         <!-- current Level JavaScript pre-production -->
         <script src="javascript/batch_home.js"></script>
-
-
 </html>

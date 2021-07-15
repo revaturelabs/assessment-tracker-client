@@ -179,7 +179,7 @@ function generateTable(week){
     //Associate name row
     tableInnards+=`</thead><tbody>`;
     for(let i = 0; i < associates.length; ++i) {
-        tableInnards+=`<tr><td id="associate-name-${i}">${associates[i].firstName}</td>`;
+        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" class="toggle_create_note_modal_btn ${associates[i].id}">${associates[i].firstName}</td>`;
         
         //Grade data
         let gradeTotal = 0;
@@ -779,7 +779,6 @@ function getScore_complete(status, response, response_loc, load_loc) {
         //load the response into the response_loc
         document.getElementById(load_loc).innerHTML = `<p class="text-danger">${response}</p>`;
     }
-    console.log(response);
 }
 function printAssociates(arrayData) {
     let display = "";
@@ -836,4 +835,31 @@ function executePreLoadScores() {
     $.each(batch.loadScores,(key,item) => {
         getScore(item.assessmentId,item.associateId,item.response_loc,item.load_loc);
     });
+}
+
+function checkValid(){
+    let form = document.getElementById('createAssessmentForm');
+    if (form.checkValidity() === true) {
+        createAssessment();
+    }
+}
+
+async function newCategory(){
+    let request_type = "POST";
+    let endpoint = `categories`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'text': document.getElementById("create_assessment_button").innerHTML};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+}
+
+function newCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        JSON.parse(response)
+    }
+    if(status === 404){
+        document.getElementById(response_loc).innerHTML = response;
+    }
 }

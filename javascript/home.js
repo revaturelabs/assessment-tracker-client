@@ -238,7 +238,7 @@ function branchData_complete(status, response, response_loc, load_loc) {
 async function pageDataToLoad() {
     // reset page content back to the actual page
     $("#mainbody").html(tempMainContentHolder);
-    loadinfoByClass("trainerName", loginData.first_name+" "+loginData.last_name);
+    loadinfoByClass("trainerName", loginData.firstName+" "+loginData.lastName);
     await loadBatchesbyYear(loginData.id);
 }
 // holds the styling for the batches
