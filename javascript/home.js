@@ -31,6 +31,10 @@ let onAssess = offPage;
 let onNotes = offPage;
 
 batchButtonCounter = 0;
+
+if(sessionStorage.getItem("isAdmin")){
+    window.location.href = "admin.html";
+}
 // Chapter 1. Global var Declarations End -----------------
 
 // Chapter 2. Ajax ----------------------------------------
@@ -234,7 +238,7 @@ function branchData_complete(status, response, response_loc, load_loc) {
 async function pageDataToLoad() {
     // reset page content back to the actual page
     $("#mainbody").html(tempMainContentHolder);
-    loadinfoByClass("trainerName", loginData.first_name+" "+loginData.last_name);
+    loadinfoByClass("trainerName", loginData.firstName+" "+loginData.lastName);
     await loadBatchesbyYear(loginData.id);
 }
 // holds the styling for the batches
