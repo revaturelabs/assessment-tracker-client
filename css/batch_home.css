@@ -1,7 +1,3 @@
-
-/* .del-week {
-    min-height: 85%;
-} */
 #deletePanelBtn {
     font-size: 1.5rem !important;
 }
@@ -15,4 +11,8 @@
 
 .active{
     display:block;
+}
+
+.table-container{
+    overflow: auto;
 }
