@@ -938,6 +938,9 @@ function newCategory_Complete(status, response, response_loc, load_loc){
     }
 }
 
+//list of categories (category ID's) to add upon submit
+let pendingCategories = [];
+
 async function getCategories() {
     let response_func = getCategories_Complete;
     let endpoint =  `categories`;
@@ -958,15 +961,41 @@ function getCategories_Complete(status, response, response_loc, load_loc){
         console.log(categories);//debugging
 
         select = document.getElementById("category-select");
-        for(let category of categories){
-            let option = document.createElement(`option`);
-            option.value = category.name;
-            option.innerHTML = category.name;
-            option.onclick = "temp";
-            select.appendChild(option);
+        let category;
+        for(let i=0;i<categories.length;i++){
+            category = categories[i];
+            console.log(category);
+            if(document.getElementById(category.name) == null){
+                let option = document.createElement(`option`);
+                option.id = category.name;
+                option.value = category.name;
+                option.innerHTML = category.name;
+                option.onclick = addCategoryList(category);
+                select.appendChild(option);
+                
+            }
         }
     }else{
         console.log("Potential Failure");
         console.log(JSON.parse(response));
     }
+}
+
+function addCategoryList(category){
+    if(pendingCategories.indexOf(category.categoryId) != -1){//if category already in pending list
+        toggleAlert(false, "Category already added.");
+        return;
+    }
+    let li = document.getElementById("category-list");
+    li.innerHTML += `
+    <li>${category.name}
+    <button style="float:right" id="cancel${category.categoryId}" type="button" class="btn btn-warning" data-dismiss="modal" onclick="cancel(${category})">Cancel<i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+    </li><br />`;
+    pendingCategories.push(category.categoryId);
+}
+
+function cancel(category){
+    pendingCategories.pop(category.categoryId);
+    let rem = document.getElementById(category.name);
+    rem.parentNode.removeChild(rem);
 }
