@@ -7,8 +7,6 @@ let onNotes = offPage;
 let state={};
 state.batchId = window.localStorage["batchId"];
 if (window.localStorage["batchId"]){
-    console.log("batchId already stored");
-    console.log(window.localStorage["batchId"]);
 }else{
     localStorage.setItem("batchId", null);
 }
@@ -20,6 +18,7 @@ let batch = {
     currentWeek: 71,
     totalWeeks: 0
 }
+
 let assesssments = new Object();
 //Table variables
 let associates = new Object();
@@ -148,6 +147,9 @@ function generateTable(week){
         <th id="assessment-name-${i}"><a onclick="
         batch.currentWeek = ${assessmentsArr[week][i].weekId};
         batch.currentID = ${assessmentsArr[week][i].assessmentId};
+        batch.currentCategory = ${assessmentsArr[week][i].categoryId};
+        batch.currentType = ${assessmentsArr[week][i].typeId};
+        updateAssessInfo(batch.currentType, batch.currentCategory);
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
@@ -159,7 +161,9 @@ function generateTable(week){
     //Associate name row
     tableInnards+=`</thead><tbody>`;
     for(let i = 0; i < associates.length; ++i) {
-        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" class="toggle_create_note_modal_btn ${associates[i].id}">${associates[i].firstName}</td>`;
+        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" 
+        data-toggle="modal" data-target="#create_note_modal" class="toggle_create_note_modal_btn" 
+        data-id="${associates[i].id}">${associates[i].firstName}</td>`;
         
         //Grade data
         let gradeTotal = 0;
@@ -215,6 +219,61 @@ function generateTable(week){
             });
         }
     }
+}
+
+//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
+//Assessment types are currently fixed, so a switch determines which type to display based on typeId.
+//The Category switch should be replaced with a fetch request to get the category name ASAP:
+//Trainers can make new Categories and this switch only accounts for hard-coded ones, so any new category will only show up as 'Other'.
+function updateAssessInfo(typeId, catId) {
+    let typeName = "";
+    let catName = "";
+
+    switch (typeId) {
+        case 1:
+            typeName = "QC";
+            break;
+        case 2:
+            typeName = "Quiz";
+            break;
+        case 3:
+            typeName = "One-on-Ones";
+            break;
+        case 4:
+            typeName = "Project";
+            break;
+    }
+    switch (catId) {
+        case 1:
+            catName = "Swagger";
+            break;
+        case 2:
+            catName = "Testing";
+            break;
+        case 3:
+            catName = "DevOps";
+            break;
+        case 4:
+            catName = "AWS";
+            break;
+        case 5:
+            catName = "Java";
+            break;
+        case 6:
+            catName = "HTTP";
+            break;
+        case 7:
+            catName = "REST";
+            break;
+        case 8:
+            catName = "Python";
+            break;
+        default:
+            catName = "Other";
+            break;
+    }
+    document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName;
+    document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
 }
 
 async function addWeek(totalWeeks) {

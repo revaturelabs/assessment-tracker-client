@@ -17,9 +17,9 @@
         <!-- Current Page Specific CSS pre-production -->
         <!-- <link rel="stylesheet" href="../static/css/batch_home.css"> -->
         <!-- Root Level CSS minified -->
-        <link rel="stylesheet" href="css/main.min.css">
+        <link rel="stylesheet" href="css/main.css">
         <!-- Current Page Specific CSS minified -->
-        <link rel="stylesheet" href="css/batch_home.min.css">
+        <link rel="stylesheet" href="css/batch_home.css">
     </head>
     <body class="bg-dark">
         <!-- Page HTML Code Goes Here Start -->
@@ -199,6 +199,8 @@
                         </div>
                         <!-- adjust assessment weight modal -->
                         <div class="modal-body">
+                            <p id="assessTypeText" class="font-weight-bold">Assessment Type: Quiz</p>
+                            <p id="assessCategoryText" class="font-weight-bold">Assessment Category: Python</p>
                             <form id="adjustWeightForm" class="needs-validation" novalidate autocomplete="on">
                                 <div class="form-group">
                                     <label for="weightControl">Adjust Weight</label>
@@ -251,6 +253,32 @@
                     </div>
                 </div>
             </div>
+            <!--Add note modal-->
+            <div class="modal fade" id="create_note_modal" tabindex="-1" role="dialog" aria-labelledby="create_note_modalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="create_note_modalLabel">New message</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        </div>
+                        <div class="modal-body">
+                        <form>
+                            <div class="form-group">
+                            <label for="note_text" class="col-form-label">Message:</label>
+                            <textarea class="form-control" id="note_text"></textarea>
+                            <div class="invalid_alert text-danger hidden" id="modal_alert">Note text cannot be empty.</div>
+                            </div>
+                        </form>
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="close_note_modal_btn">Close</button>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" id="submit_new_note_btn">Send message</button>
+                        </div>
+                    </div>
+                </div>
+          </div>
         </footer>
         <!-- Page HTML Code End -->
         <!-- Optional JavaScript -->
@@ -263,4 +291,6 @@
         <script src="javascript/main.js"></script>
         <!-- current Level JavaScript pre-production -->
         <script src="javascript/batch_home.js"></script>
+        <script src="newJS/createNote.js"></script>
+
 </html>
