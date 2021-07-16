@@ -149,14 +149,19 @@ function generateTable(week){
     //Setup
     const tableContainerDOM = document.getElementById("table-container");
     const buttonHTML = `
-    <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
-    class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
-       <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
-    </button>
-    <button id="table_submit_button" type="submit" class="btn btn-info" data-dismiss="modal"
-        onclick="updateTableGrades(${week})">
-        Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
-    </button>`;
+    <div class="alert alert-primary hidden" id="batch_home_alerts" role="alert">
+            This is a light alert—check it out!
+    </div>
+    <div class = "d-flex">
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
+        <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
+        </button>
+        <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
+            onclick="updateTableGrades(${week})">
+            Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+    </div>`;
    //Empty assessment list
     if(!assessmentsArr[week]) {
         tableContainerDOM.innerHTML = "-No Assessments Yet-" + buttonHTML;
@@ -248,60 +253,141 @@ function generateTable(week){
         }
     }
 }
+// creates default chart and associates list on load
+async function generateChart(week){
+    let associateArrNumberandName =[];
+    let assessmentsArrNames = [];
+    let averageArrGrades = [];
+    let averageArrGradeIds = [];
+    
+    //Makes associates list for the chart 
+    const chartAssociatesList = document.getElementById("chartAssociatesList");
+    for(let i = 0; i < associates.length; ++i){
+        associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
+    }
+    letchartAssociatesListFill = "";
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="radio" id="${associateArr[0]}" name="chartRadio" value="${associateArr[0]}" onclick='chooseAssociateChart(${week}, ${associateArr[1]})'><label for="${associateArr[0]}">${associateArr[0]}</label>`)
+
+    chartAssociatesList.innerHTML = letchartAssociatesListFill;
+
+    //Makes default chart
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
+    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
+    for(assessmentId of averageArrGradeIds){
+        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
+        console.log(response)
+        if(response.status === 404){
+            averageArrGrades.push(0);
+        }else{
+            let averageGrade = await response.json();
+            averageArrGrades.push(averageGrade);
+        } 
+    }
+    let data = {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: 'rgb(255, 99, 132)', 
+            borderColor: 'rgb(255, 99, 132)',
+            data: averageArrGrades,
+        }]
+    };
+    const config = {
+        type: 'line',
+        data,
+        options: {}
+    };
+    gradeChart = new Chart(
+        document.getElementById('gradeChart'),
+        config
+      );
+}
+// creates chart depending on who you select
+async function chooseAssociateChart(week, associateArrNumber){
+    let assessmentsArrNames = [];
+    let associatesArrGrades = [];
+    let averageArrGrades = [];
+    let averageArrGradeIds = [];
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle))
+    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId))
+    gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
+    for(assessmentId of averageArrGradeIds){
+        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
+        console.log(response)
+        if(response.status === 404){
+            averageArrGrades.push(0)
+        }else{
+            let averageGrade = await response.json();
+            averageArrGrades.push(averageGrade)
+        } 
+    }
+    gradeChart.data= {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: 'rgb(255, 99, 132)', 
+            borderColor: 'rgb(255, 99, 132)',
+            data: averageArrGrades,
+        },{
+            label: "Associate's Grades",
+            backgroundColor:'#F0A73C',
+            borderColor: '#F0A73C',
+            data: associatesArrGrades,
+        }]};
+        gradeChart.update();
+}
+
+
 
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
-//The Category switch should be replaced with a fetch request to get the category name ASAP:
-//Trainers can make new Categories and this switch only accounts for hard-coded ones, so any new category will only show up as 'Other'.
-function updateAssessInfo(typeId, catId) {
+//The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
+async function updateAssessInfo(typeId, catId) {
     let typeName = "";
-    let catName = "";
+    let typeNum = 0;
 
     switch (typeId) {
         case 1:
             typeName = "QC";
+            typeNum = 100;
             break;
         case 2:
             typeName = "Quiz";
+            typeNum = 40;
             break;
         case 3:
             typeName = "One-on-Ones";
+            typeNum = 60;
             break;
         case 4:
             typeName = "Project";
+            typeNum = 80;
             break;
     }
-    switch (catId) {
-        case 1:
-            catName = "Swagger";
-            break;
-        case 2:
-            catName = "Testing";
-            break;
-        case 3:
-            catName = "DevOps";
-            break;
-        case 4:
-            catName = "AWS";
-            break;
-        case 5:
-            catName = "Java";
-            break;
-        case 6:
-            catName = "HTTP";
-            break;
-        case 7:
-            catName = "REST";
-            break;
-        case 8:
-            catName = "Python";
-            break;
-        default:
-            catName = "Other";
-            break;
-    }
-    document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName;
+
+    let response_func = getCategoryNameComplete;
+    let endpoint =  `categories/${catId}`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
+    document.getElementById('assessWeightText').innerText = "Default weight is "+String(typeNum);
+}
+
+function getCategoryNameComplete(status, response, response_loc, load_loc) {
+    if(status==200){
+        //console.log("Success");
+        let catName = JSON.parse(response);
+        //console.log(catName.name);
+        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName.name;
+    }else{
+        console.log("Potential Failure");
+        console.log(JSON.parse(response));
+    }
 }
 
 async function addWeek(totalWeeks) {
@@ -597,8 +683,9 @@ async function batchData_complete(status, response, response_loc, load_loc) {
             await getAveragesForWeek(curWeek);
             await getBatchGradesForWeek(curWeek);
         }
-        generateTable(curWeek); 
+        generateTable(curWeek);
         dropdownDOM.disabled = false;
+        generateChart(curWeek);
         
         //action if code 201
     } else if(status == 201) {
@@ -678,6 +765,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         assessmentIDToTableCol[curWeek].set(newJson.assessmentId, j);
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
+        generateChart(curWeek);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
@@ -993,15 +1081,68 @@ async function newCategory(){
     let response_func = newCategory_Complete;
     let response_loc = "";
     let load_loc = "";
-    let jsonData = {'text': document.getElementById("create_assessment_button").innerHTML};
+    let jsonData = {'text': document.getElementById("create_category_button").innerHTML};
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
-        JSON.parse(response)
+        console.log(JSON.parse(response));
+
+        toggleAlert(true, "Category successfully created.");
     }
-    if(status === 404){
-        document.getElementById(response_loc).innerHTML = response;
+    else{
+        toggleAlert(false, "Failed to create category.");
     }
+}
+
+async function getCategories() {
+    let response_func = getCategories_Complete;
+    let endpoint =  `categories`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+}
+
+function getCategories_Complete(status, response, response_loc, load_loc){
+    if(status==200){
+        //console.log("Success");
+        let categories = JSON.parse(response);
+        console.log(categories);//debugging
+
+        select = document.getElementById("category-select");
+        for(let category of categories){
+            let option = document.createElement(`option`);
+            option.value = category.name;
+            option.innerHTML = category.name;
+            option.onclick = "temp";
+            select.appendChild(option);
+        }
+    }else{
+        console.log("Potential Failure");
+        console.log(JSON.parse(response));
+    }
+}
+
+/**
+ * This function toggles the alert in batch_home.html 
+ *@param {boolean} isSuccessful flag to indicate if success or not
+ *@param {string} message the message you want to display on the alert
+ **/
+const toggleAlert = function(isSuccessful, message){
+    const alert = document.getElementById('batch_home_alerts');
+
+    alert.innerHTML = message;
+    if(isSuccessful) alert.className = 'alert alert-success show';
+    else alert.className = 'alert alert-danger show';
+
+    setTimeout(() => {
+        alert.className = "alert alert-primary hidden";
+        alert.innerHTML = "";
+    }, 1500);
 }

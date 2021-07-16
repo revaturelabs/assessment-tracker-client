@@ -24,7 +24,6 @@
     <body class="bg-dark">
         <!-- Page HTML Code Goes Here Start -->
         <!-- This page for displaying batch weeks  -->
-
         <header id="headContent">
             <nav class="nav top-nav navbar-expand-lg d-flex justify-content-between bg-dark" aria-labelledby="Topbar navigation">
                 <a class="navbar-toggler rounded-0" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,18 +58,20 @@
                 <a class="nav-link text-dark d-flex align-items-center justify-content-center justify-content-md-start" title="Batch" href="batch_home.html"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<span class="d-none d-md-inline">Batch</span></a>
             </nav>
             <div id="mainbody" class="col col-10 col-md-10 mainbody bg-darker text-light p-5">
+                
                 <div id="batchLoader" class="d-flex justify-content-center"></div>
                 <!-- --------PANELS------------ -->
                 <div id="panels">
-                    
                 </div>
             </div>
-
-
+            <div>
+                <canvas id="gradeChart"></canvas>
+            </div>
+            <div id="chartAssociatesList"></button></div>
+            </div>  
         </main>
         
         <footer id="modalHolder">
-            
             <!-- Modal Section -->
             <!-- Modal Login -->
             <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModal" aria-hidden="true">
@@ -164,15 +165,15 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="assessment-title" class="col-form-label h3">Title:</label>
-                                    <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Python Quiz" maxlength=25 class="form-control form-control-lg h-50" id="assessment-title" required />
+                                    <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Python Quiz" maxlength=25 class="form-control form-control-lg h-50" id="assessment-title" autocomplete="off" required />
 
                                     <label for="category-type" class="col-form-label h3">Category Type:</label>
-                                    <select class="form-control form-control-lg h-50" id="category-select"></select>
+                                    <select class="form-control form-control-lg h-50" id="category-select" onclick="getCategories()"></select>
 
                                     <label for="new-category" class="col-form-label h3">New Category:</label>
-                                    <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Automation" maxlength=25 class="form-control form-control-lg h-50" id="new-category" /><br />
+                                    <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Automation" maxlength=25 class="form-control form-control-lg h-50" id="new-category" autocomplete="off" /><br />
                                     
-                                    <button id="create_assessment_button" onclick="newCategory()" type="submit" class="btn btn-info">Create Category &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
+                                    <button id="create_category_button" onclick="newCategory()" type="submit" class="btn btn-info">Create Category &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
                                     <div class="invalid-feedback">
                                         Please enter a valid Title.
                                     </div>
@@ -204,7 +205,7 @@
                             <form id="adjustWeightForm" class="needs-validation" novalidate autocomplete="on">
                                 <div class="form-group">
                                     <label for="weightControl">Adjust Weight</label>
-                                    <p class="text-muted">Default weight is 100</p>
+                                    <p id="assessWeightText" class="text-muted">Default weight is 100</p>
                                     <input value="100" onchange="document.getElementById('weightValue').innerHTML = this.value;" type="range" min="1" max="100" class="form-control-range" id="weightControl" name="weightControl" required>
                                     <P class="h5 text-center" id="weightValue">100</P>
                                 </div>
@@ -282,6 +283,7 @@
         </footer>
         <!-- Page HTML Code End -->
         <!-- Optional JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
