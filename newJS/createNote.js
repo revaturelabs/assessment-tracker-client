@@ -111,7 +111,7 @@ const submitNote = async function(e){
     }catch(err){
         submitNoteBtn.disabled = true;
         toggleNoteModalAlert();
-        toggleAlert();
+        toggleAlert(false, "Failed to update a note.");
     }
 }
 
