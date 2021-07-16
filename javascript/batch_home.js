@@ -219,7 +219,7 @@ function generateTable(week){
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
         if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
+        tableInnards+=`<td id="avg-data-${j}">${parseInt(avg, 10).toFixed(2)}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
