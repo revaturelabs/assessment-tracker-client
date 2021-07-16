@@ -78,8 +78,6 @@ let tempMainContentHolder = $("#mainbody").html();
 
 // Chapter 1. Global var Declarations End -----------------
 if (window.localStorage["batchId"]){
-    console.log("batchId already stored");
-    console.log(window.localStorage["batchId"]);
 }else{
     localStorage.setItem("batchId", null);
 }
@@ -88,6 +86,15 @@ if (window.localStorage["batchId"]){
 
 // This Ajax Call is a Singleton(only 1 instance)
 // All Ajax calls pass through here
+
+/**
+ * @param {string} request_type method of request GET, POST...etc.
+ * @param {string} url address to send request to
+ * @param {function} response_func callback function to execute  
+ * @param {string} response_loc (optional) the element that needs to be updated on UI
+ * @param {string} load_loc (optional) the position of the loader by element ID
+ * @param {object} jsonData (optional) object to send in body with request
+ **/
 async function ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData) {
     //create the loading object dynamically ----------
 
@@ -317,7 +324,6 @@ function searchBatches_complete(status, response, response_loc, load_loc) {
         // Logged in check
         if(getSession(loginData, true)){
             loginData = getSession(loginData, true);
-            console.log(loginData);
             pageDataToLoad();
             $("#loginBtn").html(`Log Out&nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`);
             document.getElementById("loginBtn").setAttribute("data-target", "#logoutModal");

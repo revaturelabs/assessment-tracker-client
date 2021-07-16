@@ -7,8 +7,6 @@ let onNotes = offPage;
 let state={};
 state.batchId = window.localStorage["batchId"];
 if (window.localStorage["batchId"]){
-    console.log("batchId already stored");
-    console.log(window.localStorage["batchId"]);
 }else{
     localStorage.setItem("batchId", null);
 }
@@ -20,16 +18,18 @@ let batch = {
     currentWeek: 71,
     totalWeeks: 0
 }
+
 let assesssments = new Object();
 //Table variables
 let associates = new Object();
 let assessmentsArr = [];
 //gradeCache[current week][associate index][assessment index] = current grade
-let curWeek = 2;
+let curWeek = 1;
 let gradeCache = null;
 let prevActiveTableCellDOM = null;
 let assessmentIDToTableCol = null;
 let associateIDToTableRow = null;
+let newGradeValueDOM;
 
 
 function pageDataToLoad() {
@@ -55,7 +55,28 @@ function pageDataToLoad() {
     }
 }
 const panels = document.getElementById("panels");
-
+async function getBatchGradesForWeek(week) {
+    let response_func = getBatchGradesForWeekComplete;
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = `table-container`;
+    let load_loc = "table-container";
+    let jsonData = "";
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+function getBatchGradesForWeekComplete(status, response, response_loc, load_loc) {
+    if(status === 200) {
+        generateGradeCache(curWeek);
+        const gradesForWeek = JSON.parse(response);
+        for(let g = 0; g < gradesForWeek.length; ++g) {
+            let i = associateIDToTableRow[curWeek].get(gradesForWeek[g].associateId);
+            let j = assessmentIDToTableCol[curWeek].get(gradesForWeek[g].assessmentId);
+            //Skip grades that are outside of our table bounds (page refresh will resize the cache)
+            if(i && j) gradeCache[curWeek][i][j] = gradesForWeek[g].score;
+        }
+    }
+}
 async function generateGradeCache(week) {
     //Exit if cache has already been made
     if(gradeCache[week]) return;
@@ -73,7 +94,6 @@ async function generateGradeCache(week) {
             //Start with invalid score this gets reset to a vaild value if a score is found
             gradeCache[week][i][j] = "-";
             assessmentIDToTableCol[week].set(assessmentsArr[week][j].assessmentId, j);
-            await getScore(assessmentsArr[week][j].assessmentId, associates[i].id, null, null);
         }
     }
 }
@@ -84,37 +104,41 @@ function addGradeCacheCol(week) {
         gradeCache[week][i].push("-");
     }
 }
-function getUpdateScoreInnerHTML(item) {
-    return `
-    <form id="GiveScoreForm${item.assessmentId}" class="needs-validation" novalidate autocomplete="off">
-        <div id="scoreFormElem${item.assessmentId}">
-            <div class="form-group">
-                <label for="score${item.assessmentId}">${item.assessmentTitle}</label>
-                <input placeholder="Please type a score out of 100%" type="number" step="0.01" min="0.01" max="100" class="form-control" id="score${item.assessmentId}" name="score${item.assessmentId}" required>
-                <div class="invalid-feedback">
-                    Please type a valid Score percentage out of 100%.
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <span id="loadScoreResult${item.assessmentId}"></span><span id="ScoreLoad${item.assessmentId}"></span>
-            <button onclick="let form = document.getElementById('GiveScoreForm${item.assessmentId}');
-            if (form.checkValidity() === true) {
-                batch.currentScores = new Object();
-                UpdateScores(document.getElementById('score${item.assessmentId}').value,${item.assessmentId},'loadScoreResult${item.assessmentId}','ScoreLoad${item.assessmentId}');
-            }" type="submit" class="btn btn-info">Save &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i></button>
-            <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
-        </div>
-    </form>`;
+function generateDropdownHTML(numWeeks) {
+    let dropdownHTML = `
+    <div class="form-group">
+        <label for="week-num" class="col-form-label h3">Current Week:</label>
+        <select class="form-control form-control-lg h-50" id="week-num" required>
+        `;
+
+    for(let i = 0; i < numWeeks; ++i) {
+        if(i+1 === curWeek) dropdownHTML += `<option value="${i+1}" selected="selected">Week ${i+1}</option>`;
+        else dropdownHTML += `<option value="${i+1}">Week ${i+1}</option>`;
+    }
+    dropdownHTML += `</select></div>`;
+    dropdownHTML += `<div id="table-container"></div>`;
+    return dropdownHTML;
 }
 function generateTable(week){
-    //Empty assessment list
-    const buttonHTML = `<button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
-    class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
-       <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
-   </button>`;
+    //Setup
+    const tableContainerDOM = document.getElementById("table-container");
+    const buttonHTML = `
+    <div class="alert alert-primary hidden" id="batch_home_alerts" role="alert">
+            This is a light alert—check it out!
+    </div>
+    <div class = "d-flex">
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
+        <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
+        </button>
+        <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
+            onclick="updateTableGrades(${week})">
+            Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+    </div>`;
+   //Empty assessment list
     if(!assessmentsArr[week]) {
-        document.getElementById("mainbody").innerHTML = "-No Assessments Yet-" + buttonHTML;
+        tableContainerDOM.innerHTML = "-No Assessments Yet-" + buttonHTML;
         return;
     }
     let tableInnards = `
@@ -128,33 +152,37 @@ function generateTable(week){
         <th id="assessment-name-${i}"><a onclick="
         batch.currentWeek = ${assessmentsArr[week][i].weekId};
         batch.currentID = ${assessmentsArr[week][i].assessmentId};
+        batch.currentCategory = ${assessmentsArr[week][i].categoryId};
+        batch.currentType = ${assessmentsArr[week][i].typeId};
+        updateAssessInfo(batch.currentType, batch.currentCategory);
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
         " id="assessment_${assessmentsArr[week][i].assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessmentsArr[week][i].assessmentTitle}</a>
         </th>`;
-        
     }
     tableInnards+=`<th>Totals</th>`;
 
     //Associate name row
     tableInnards+=`</thead><tbody>`;
     for(let i = 0; i < associates.length; ++i) {
-        tableInnards+=`<tr><td id="associate-name-${i}">${associates[i].firstName}</td>`;
+        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" 
+        data-toggle="modal" data-target="#create_note_modal" class="toggle_create_note_modal_btn" 
+        data-id="${associates[i].id}">${associates[i].firstName}</td>`;
         
         //Grade data
         let gradeTotal = 0;
         for(let j = 0; j < assessmentsArr[week].length; ++j) {
-            //tableInnards+=`<td id="grade-data-${i}-${j}">${gradeCache[week][i][j]}</td>`;
-            tableInnards +=
-            `<td><a id="grade-data-${i}-${j}" onclick="batch.currentAssoc = ${associates[i].id};
-            batch.currentWeek = ${week};
-            printWeekAssess(${week});
-            document.getElementById('assessScoreTitle').innerHTML = 'Week '+ ${week};
-            document.getElementById('studentName').innerHTML = '${associates[i].firstName}';
-            " data-toggle="modal" href="#giveScores">${gradeCache[week][i][j]}</a></td>`;
-
-            if(gradeCache[week][i][j] !== "-") gradeTotal += gradeCache[week][i][j];
+            let placeholder = gradeCache[week][i][j];
+            if(gradeCache[week][i][j] !== "-") { 
+                placeholder = Math.abs(gradeCache[week][i][j]); 
+                gradeTotal += placeholder;
+            }
+            tableInnards += `
+            <td>
+                <input id="grade-data-${i}-${j}" type="number" min="0" max="100" class="table-active" placeholder="${placeholder}">
+            </td>
+            `;   
         }
         tableInnards += `<td>${gradeTotal}</td></tr>`;
     }
@@ -162,13 +190,13 @@ function generateTable(week){
     //Averages row
     tableInnards+=`<tr><td>Average</td>`;
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
-        //BUG - calc average
-        tableInnards+=`<td>Average ${j+1}</td>`;
+        //BUG - get average from java server
+        tableInnards+=`<td id=average${j+1}>Average ${j+1}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
     tableInnards += buttonHTML;
-    document.getElementById("mainbody").innerHTML=tableInnards;
+    tableContainerDOM.innerHTML=tableInnards;
 
     //Once InnerHTML is done set click events
     
@@ -176,6 +204,7 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         const curAssessCellDOM = document.getElementById(`assessment-name-${j}`);
         curAssessCellDOM.addEventListener('click', (e) => {
+            //BUG - Add styling if needed for active cells
             if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
             curAssessCellDOM.className = "table-active";
             prevActiveTableCellDOM = curAssessCellDOM;
@@ -185,14 +214,13 @@ function generateTable(week){
     for(let i = 0; i < associates.length; ++i) {
         for(let j = 0; j < assessmentsArr[week].length; ++j) {
             const curGradeCellDOM = document.getElementById(`grade-data-${i}-${j}`);
-            curGradeCellDOM.addEventListener('click', (e) => {
-                if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
-                //BUG - Add styling if needed for active cells
-                curGradeCellDOM.className = "table-active";
-                prevActiveTableCellDOM = curGradeCellDOM;
-                //BUG - Enable user to edit score
-                document.getElementById("scoreForms").innerHTML = getUpdateScoreInnerHTML(assessmentsArr[week][j]);
-                newGenForms();
+            curGradeCellDOM.addEventListener('input', (e) => {
+                e.preventDefault();
+                if(gradeCache[curWeek][i][j] === "*") return;
+                //Mark this cell as edited
+                if(gradeCache[curWeek][i][j] !== "-") 
+                    gradeCache[curWeek][i][j] = -1 * Math.abs(gradeCache[curWeek][i][j]);
+                else gradeCache[curWeek][i][j] = "*";
             });
         }
     }
@@ -241,7 +269,6 @@ async function generateChart(week){
         data,
         options: {}
     };
-
     gradeChart = new Chart(
         document.getElementById('gradeChart'),
         config
@@ -283,7 +310,52 @@ async function chooseAssociateChart(week, associateArrNumber){
 }
 
 
-//Is this used anymore? Can we delete? 
+
+//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
+//Assessment types are currently fixed, so a switch determines which type to display based on typeId.
+//The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
+async function updateAssessInfo(typeId, catId) {
+    let typeName = "";
+
+    switch (typeId) {
+        case 1:
+            typeName = "QC";
+            break;
+        case 2:
+            typeName = "Quiz";
+            break;
+        case 3:
+            typeName = "One-on-Ones";
+            break;
+        case 4:
+            typeName = "Project";
+            break;
+    }
+
+    let response_func = getCategoryNameComplete;
+    let endpoint =  `categories/${catId}`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
+}
+
+function getCategoryNameComplete(status, response, response_loc, load_loc) {
+    if(status==200){
+        //console.log("Success");
+        let catName = JSON.parse(response);
+        //console.log(catName.name);
+        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName.name;
+    }else{
+        console.log("Potential Failure");
+        console.log(JSON.parse(response));
+    }
+}
+
 async function addWeek(totalWeeks) {
     let holder = "";
     for (i = 1; i <= totalWeeks; i++) {
@@ -357,12 +429,60 @@ async function getAssessmentsForWeek(weekId) {
     let response_loc = `mainbody`;
     let load_loc = "batchLoader"+weekId;
     let jsonData = "";
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
-
 function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
     if (status == 200) {
         assessmentsArr[curWeek] = JSON.parse(response); 
+    }
+}
+
+//Update all grades in the table
+async function updateTableGrades(week) {
+    let response_func = updateTableGradesComplete;
+    let endpoint =  `grades`;
+    let url = java_base_url + endpoint;
+    let response_loc = ``;
+    let load_loc = "";
+    //Disable dropdown until we are done updating
+    let dropdownDOM = document.getElementById("week-num");
+    dropdownDOM.disabled = true;
+    for(let i = 0; i < associates.length; ++i) {
+        for(let j = 0; j < assessmentsArr[week].length; ++j) {
+            //skip non negative grade values or -; these were not updated
+            if(gradeCache[week][i][j] === "-" || gradeCache[week][i][j] > 0)
+                continue;
+            //0 edge case - compare values and see if edited
+            newGradeValueDOM = document.getElementById(`grade-data-${i}-${j}`);
+            if(gradeCache[week][i][j] === 0) {
+                if(gradeCache[week][i][j] === newGradeValueDOM.value) continue;
+            }
+            //Set our method depending on value
+            let method = "PUT";
+            if(gradeCache[week][i][j] === "*") method = "POST";
+            
+            let jsonData = {
+                "associateId": associates[i].id,
+                "assessmentId": assessmentsArr[week][j].assessmentId,
+                "score": newGradeValueDOM.value
+            };
+            await ajaxCaller(method, url, response_func, response_loc, load_loc, jsonData);
+        }
+    }
+    dropdownDOM.disabled = false;
+}
+function updateTableGradesComplete(status, response, response_loc, load_loc) {
+    console.log(status);
+    if(status === 200 || status === 201) {
+        //update cache
+        const updatedGrade = JSON.parse(response);
+        let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
+        let j = assessmentIDToTableCol[curWeek].get(updatedGrade.assessmentId);
+        gradeCache[curWeek][i][j] = newGradeValueDOM.value;
+    }
+    else if(status === 404) {
+        //keep original value - do nothing
+        //BUG - possibly change style to show user a value was invalid
     }
 }
 
@@ -472,6 +592,7 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         response_loc = jsonHolder;
         batch = response_loc;
         //await addWeek(batch.totalWeeks);
+        let dropdownDOM = document.getElementById("week-num");
         //Set inital cache week size if it wasnt set before
         if(!gradeCache) {
             await getAssociates();
@@ -479,14 +600,25 @@ async function batchData_complete(status, response, response_loc, load_loc) {
             assessmentIDToTableCol = new Array(batch.totalWeeks+1);
             associateIDToTableRow = new Array(batch.totalWeeks+1);
             assessmentsArr = new Array(batch.totalWeeks+1);
+            document.getElementById("mainbody").innerHTML = generateDropdownHTML(gradeCache.length);
+            dropdownDOM = document.getElementById("week-num");
+            dropdownDOM.addEventListener('input', (e) => {
+                e.preventDefault();
+                curWeek = Number(e.target.value);
+                //Disable this element until the table is fully loaded
+                dropdownDOM.disabled = true;
+                batchData(batch.id, batch);
+            });
+            //Disable for now until week 1 is loaded by default
+            dropdownDOM.disabled = true;
         }
-        //Get assessments for the week if we didnt already
+        //Get assessments and grades for the week if we didnt already
         if(!gradeCache[curWeek]) {
-            //Do week 2 by default
             await getAssessmentsForWeek(curWeek);
-            await generateGradeCache(curWeek);
+            await getBatchGradesForWeek(curWeek);
         }
         generateTable(curWeek);
+        dropdownDOM.disabled = false;
         generateChart(curWeek);
         
         //action if code 201
@@ -811,7 +943,6 @@ function getScore_complete(status, response, response_loc, load_loc) {
         //load the response into the response_loc
         document.getElementById(load_loc).innerHTML = `<p class="text-danger">${response}</p>`;
     }
-    console.log(response);
 }
 function printAssociates(arrayData) {
     let display = "";
@@ -868,4 +999,49 @@ function executePreLoadScores() {
     $.each(batch.loadScores,(key,item) => {
         getScore(item.assessmentId,item.associateId,item.response_loc,item.load_loc);
     });
+}
+
+function checkValid(){
+    let form = document.getElementById('createAssessmentForm');
+    if (form.checkValidity() === true) {
+        createAssessment();
+    }
+}
+
+async function newCategory(){
+    let request_type = "POST";
+    let endpoint = `categories`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'text': document.getElementById("create_assessment_button").innerHTML};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+}
+
+function newCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        JSON.parse(response)
+    }
+    if(status === 404){
+        document.getElementById(response_loc).innerHTML = response;
+    }
+}
+
+/**
+ * This function toggles the alert in batch_home.html 
+ *@param {boolean} isSuccessful flag to indicate if success or not
+ *@param {string} message the message you want to display on the alert
+ **/
+const toggleAlert = function(isSuccessful, message){
+    const alert = document.getElementById('batch_home_alerts');
+
+    alert.innerHTML = message;
+    if(isSuccessful) alert.className = 'alert alert-success show';
+    else alert.className = 'alert alert-danger show';
+
+    setTimeout(() => {
+        alert.className = "alert alert-primary hidden";
+        alert.innerHTML = "";
+    }, 1500);
 }
