@@ -29,6 +29,7 @@ let gradeCache = null;
 let prevActiveTableCellDOM = null;
 let assessmentIDToTableCol = null;
 let associateIDToTableRow = null;
+let newGradeValueDOM;
 
 
 function pageDataToLoad() {
@@ -93,7 +94,6 @@ async function generateGradeCache(week) {
             //Start with invalid score this gets reset to a vaild value if a score is found
             gradeCache[week][i][j] = "-";
             assessmentIDToTableCol[week].set(assessmentsArr[week][j].assessmentId, j);
-            //await getScore(assessmentsArr[week][j].assessmentId, associates[i].id, null, null);
         }
     }
 }
@@ -103,29 +103,6 @@ function addGradeCacheCol(week) {
         if(!gradeCache[week][i]) gradeCache[week][i] = [];
         gradeCache[week][i].push("-");
     }
-}
-function getUpdateScoreInnerHTML(item) {
-    return `
-    <form id="GiveScoreForm${item.assessmentId}" class="needs-validation" novalidate autocomplete="off">
-        <div id="scoreFormElem${item.assessmentId}">
-            <div class="form-group">
-                <label for="score${item.assessmentId}">${item.assessmentTitle}</label>
-                <input placeholder="Please type a score out of 100%" type="number" step="0.01" min="0.01" max="100" class="form-control" id="score${item.assessmentId}" name="score${item.assessmentId}" required>
-                <div class="invalid-feedback">
-                    Please type a valid Score percentage out of 100%.
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <span id="loadScoreResult${item.assessmentId}"></span><span id="ScoreLoad${item.assessmentId}"></span>
-            <button onclick="let form = document.getElementById('GiveScoreForm${item.assessmentId}');
-            if (form.checkValidity() === true) {
-                batch.currentScores = new Object();
-                UpdateScores(document.getElementById('score${item.assessmentId}').value,${item.assessmentId},'loadScoreResult${item.assessmentId}','ScoreLoad${item.assessmentId}');
-            }" type="submit" class="btn btn-info">Save &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i></button>
-            <button type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
-        </div>
-    </form>`;
 }
 function generateDropdownHTML(numWeeks) {
     let dropdownHTML = `
@@ -145,10 +122,15 @@ function generateDropdownHTML(numWeeks) {
 function generateTable(week){
     //Setup
     const tableContainerDOM = document.getElementById("table-container");
-    const buttonHTML = `<button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+    const buttonHTML = `
+    <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
     class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
        <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
-   </button>`;
+    </button>
+    <button id="table_submit_button" type="submit" class="btn btn-info" data-dismiss="modal"
+        onclick="updateTableGrades(${week})">
+        Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
+    </button>`;
    //Empty assessment list
     if(!assessmentsArr[week]) {
         tableContainerDOM.innerHTML = "-No Assessments Yet-" + buttonHTML;
@@ -173,7 +155,6 @@ function generateTable(week){
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
         " id="assessment_${assessmentsArr[week][i].assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessmentsArr[week][i].assessmentTitle}</a>
         </th>`;
-        
     }
     tableInnards+=`<th>Totals</th>`;
 
@@ -187,16 +168,16 @@ function generateTable(week){
         //Grade data
         let gradeTotal = 0;
         for(let j = 0; j < assessmentsArr[week].length; ++j) {
-            //tableInnards+=`<td id="grade-data-${i}-${j}">${gradeCache[week][i][j]}</td>`;
-            tableInnards +=
-            `<td><a id="grade-data-${i}-${j}" onclick="batch.currentAssoc = ${associates[i].id};
-            batch.currentWeek = ${week};
-            printWeekAssess(${week});
-            document.getElementById('assessScoreTitle').innerHTML = 'Week '+ ${week};
-            document.getElementById('studentName').innerHTML = '${associates[i].firstName}';
-            " data-toggle="modal" href="#giveScores">${gradeCache[week][i][j]}</a></td>`;
-
-            if(gradeCache[week][i][j] !== "-") gradeTotal += gradeCache[week][i][j];
+            let placeholder = gradeCache[week][i][j];
+            if(gradeCache[week][i][j] !== "-") { 
+                placeholder = Math.abs(gradeCache[week][i][j]); 
+                gradeTotal += placeholder;
+            }
+            tableInnards += `
+            <td>
+                <input id="grade-data-${i}-${j}" type="number" min="0" max="100" class="table-active" placeholder="${placeholder}">
+            </td>
+            `;   
         }
         tableInnards += `<td>${gradeTotal}</td></tr>`;
     }
@@ -204,7 +185,7 @@ function generateTable(week){
     //Averages row
     tableInnards+=`<tr><td>Average</td>`;
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
-        //BUG - calc average
+        //BUG - get average from jaav server
         tableInnards+=`<td>Average ${j+1}</td>`;
     }
     //Finalize table html
@@ -218,6 +199,7 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         const curAssessCellDOM = document.getElementById(`assessment-name-${j}`);
         curAssessCellDOM.addEventListener('click', (e) => {
+            //BUG - Add styling if needed for active cells
             if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
             curAssessCellDOM.className = "table-active";
             prevActiveTableCellDOM = curAssessCellDOM;
@@ -227,14 +209,13 @@ function generateTable(week){
     for(let i = 0; i < associates.length; ++i) {
         for(let j = 0; j < assessmentsArr[week].length; ++j) {
             const curGradeCellDOM = document.getElementById(`grade-data-${i}-${j}`);
-            curGradeCellDOM.addEventListener('click', (e) => {
-                if(prevActiveTableCellDOM) prevActiveTableCellDOM.className = "";
-                //BUG - Add styling if needed for active cells
-                curGradeCellDOM.className = "table-active";
-                prevActiveTableCellDOM = curGradeCellDOM;
-                //BUG - Enable user to edit score
-                document.getElementById("scoreForms").innerHTML = getUpdateScoreInnerHTML(assessmentsArr[week][j]);
-                newGenForms();
+            curGradeCellDOM.addEventListener('input', (e) => {
+                e.preventDefault();
+                if(gradeCache[curWeek][i][j] === "*") return;
+                //Mark this cell as edited
+                if(gradeCache[curWeek][i][j] !== "-") 
+                    gradeCache[curWeek][i][j] = -1 * Math.abs(gradeCache[curWeek][i][j]);
+                else gradeCache[curWeek][i][j] = "*";
             });
         }
     }
@@ -370,10 +351,58 @@ async function getAssessmentsForWeek(weekId) {
     let jsonData = "";
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
-
 function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
     if (status == 200) {
         assessmentsArr[curWeek] = JSON.parse(response); 
+    }
+}
+
+//Update all grades in the table
+async function updateTableGrades(week) {
+    let response_func = updateTableGradesComplete;
+    let endpoint =  `grades`;
+    let url = java_base_url + endpoint;
+    let response_loc = ``;
+    let load_loc = "";
+    //Disable dropdown until we are done updating
+    let dropdownDOM = document.getElementById("week-num");
+    dropdownDOM.disabled = true;
+    for(let i = 0; i < associates.length; ++i) {
+        for(let j = 0; j < assessmentsArr[week].length; ++j) {
+            //skip non negative grade values or -; these were not updated
+            if(gradeCache[week][i][j] === "-" || gradeCache[week][i][j] > 0)
+                continue;
+            //0 edge case - compare values and see if edited
+            newGradeValueDOM = document.getElementById(`grade-data-${i}-${j}`);
+            if(gradeCache[week][i][j] === 0) {
+                if(gradeCache[week][i][j] === newGradeValueDOM.value) continue;
+            }
+            //Set our method depending on value
+            let method = "PUT";
+            if(gradeCache[week][i][j] === "*") method = "POST";
+            
+            let jsonData = {
+                "associateId": associates[i].id,
+                "assessmentId": assessmentsArr[week][j].assessmentId,
+                "score": newGradeValueDOM.value
+            };
+            await ajaxCaller(method, url, response_func, response_loc, load_loc, jsonData);
+        }
+    }
+    dropdownDOM.disabled = false;
+}
+function updateTableGradesComplete(status, response, response_loc, load_loc) {
+    console.log(status);
+    if(status === 200 || status === 201) {
+        //update cache
+        const updatedGrade = JSON.parse(response);
+        let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
+        let j = assessmentIDToTableCol[curWeek].get(updatedGrade.assessmentId);
+        gradeCache[curWeek][i][j] = newGradeValueDOM.value;
+    }
+    else if(status === 404) {
+        //keep original value - do nothing
+        //BUG - possibly change style to show user a value was invalid
     }
 }
 
