@@ -275,7 +275,6 @@ async function generateChart(week){
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
     for(assessmentId of averageArrGradeIds){
         const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
-        console.log(response)
         if(response.status === 404){
             averageArrGrades.push(0);
         }else{
@@ -543,10 +542,14 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
         totalDataDOM.innerHTML = curAssociateTotal;
         //update cache
         gradeCache[curWeek][i][j] = updatedGrade.score;
+        toggleAlert(true, "Successfully updated grade table.");
     }
     else if(status === 404) {
         //keep original value - do nothing
         //BUG - possibly change style to show user a value was invalid
+        toggleAlert(false, "Error updating grade error.");
+    }else if(status >= 500){
+        toggleAlert(false, "Internal service error.");
     }
 }
 
@@ -1136,7 +1139,6 @@ function getCategories_Complete(status, response, response_loc, load_loc){
  **/
 const toggleAlert = function(isSuccessful, message){
     const alert = document.getElementById('batch_home_alerts');
-
     alert.innerHTML = message;
     if(isSuccessful) alert.className = 'alert alert-success show';
     else alert.className = 'alert alert-danger show';
