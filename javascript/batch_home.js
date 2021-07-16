@@ -923,15 +923,50 @@ async function newCategory(){
     let response_func = newCategory_Complete;
     let response_loc = "";
     let load_loc = "";
-    let jsonData = {'text': document.getElementById("create_assessment_button").innerHTML};
+    let jsonData = {'text': document.getElementById("create_category_button").innerHTML};
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
-        JSON.parse(response)
+        console.log(JSON.parse(response));
+
+        toggleAlert(true, "Category successfully created.");
     }
-    if(status === 404){
-        document.getElementById(response_loc).innerHTML = response;
+    else{
+        toggleAlert(false, "Failed to create category.");
+    }
+}
+
+async function getCategories() {
+    let response_func = getCategories_Complete;
+    let endpoint =  `categories`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+}
+
+function getCategories_Complete(status, response, response_loc, load_loc){
+    if(status==200){
+        //console.log("Success");
+        let categories = JSON.parse(response);
+        console.log(categories);//debugging
+
+        select = document.getElementById("category-select");
+        for(let category of categories){
+            let option = document.createElement(`option`);
+            option.value = category.name;
+            option.innerHTML = category.name;
+            option.onclick = "temp";
+            select.appendChild(option);
+        }
+    }else{
+        console.log("Potential Failure");
+        console.log(JSON.parse(response));
     }
 }
