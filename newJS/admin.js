@@ -270,6 +270,14 @@ const setStartDate = () => {
 	document.getElementById("startDate").value = currDate;
 };
 
+const setEndDate = () => {
+	const currDate = new Date().getTime();
+	const laterTime = currDate + 1209600000;
+	const laterDate = new Date(laterTime).toDateInputValue();
+	document.getElementById("endDate").value = laterDate;
+}
+
+
 //Helper function to stripdown date to this format: "07-02-2021" for the frontend date selector
 Date.prototype.toDateInputValue = function () {
 	var local = new Date(this);
@@ -281,4 +289,5 @@ search.addEventListener("keyup", filterList);
 submit.addEventListener("click", createBatch);
 document.addEventListener("DOMContentLoaded", getAllAssociates);
 document.addEventListener("DOMContentLoaded", setStartDate);
+document.addEventListener("DOMContentLoaded", setEndDate);
 document.addEventListener("DOMContentLoaded", getAllTrainers);
