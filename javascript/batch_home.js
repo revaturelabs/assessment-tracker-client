@@ -478,13 +478,14 @@ async function updateTableGrades(week) {
     dropdownDOM.disabled = false;
 }
 function updateTableGradesComplete(status, response, response_loc, load_loc) {
-    console.log(status);
     if(status === 200 || status === 201) {
         //update cache
         const updatedGrade = JSON.parse(response);
         let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
         let j = assessmentIDToTableCol[curWeek].get(updatedGrade.assessmentId);
         gradeCache[curWeek][i][j] = newGradeValueDOM.value;
+
+        toggleAlert(true, "Successfully updated grades.");
     }
     else if(status === 404) {
         //keep original value - do nothing
