@@ -26,6 +26,7 @@ let assessmentsArr = [];
 //gradeCache[current week][associate index][assessment index] = current grade
 let curWeek = 1;
 let gradeCache = null;
+let assessmentIDToAverageCache = null;
 let prevActiveTableCellDOM = null;
 let assessmentIDToTableCol = null;
 let associateIDToTableRow = null;
@@ -72,12 +73,37 @@ function getBatchGradesForWeekComplete(status, response, response_loc, load_loc)
         for(let g = 0; g < gradesForWeek.length; ++g) {
             let i = associateIDToTableRow[curWeek].get(gradesForWeek[g].associateId);
             let j = assessmentIDToTableCol[curWeek].get(gradesForWeek[g].assessmentId);
-            //Skip grades that are outside of our table bounds (page refresh will resize the cache)
-            if(i && j) gradeCache[curWeek][i][j] = gradesForWeek[g].score;
+            //Skip invalid indices 
+            if(!i && i !== 0) continue;
+            if(!j && j !== 0) continue;
+            gradeCache[curWeek][i][j] = gradesForWeek[g].score;
+            assessmentIDToAverageCache[curWeek].get(gradesForWeek[g].assessmentId).numScores += 1;
         }
     }
 }
-async function generateGradeCache(week) {
+async function getAveragesForWeek(week) {
+    let response_func = getAveragesForWeekComplete;
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades/average`
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = `table-container`;
+    let load_loc = "table-container";
+    let jsonData = "";
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+function getAveragesForWeekComplete(status, response, response_loc, load_loc) {
+    if(status === 200) {
+        const averageForWeek = JSON.parse(response);
+        assessmentIDToAverageCache[curWeek] = new Map();
+        for(let i = 0; i < averageForWeek.length; ++i) {
+            assessmentIDToAverageCache[curWeek].set(averageForWeek[i].assessmentId, {
+                'average': averageForWeek[i].averageScore,
+                'numScores': 0
+            });
+        }
+    }
+}
+function generateGradeCache(week) {
     //Exit if cache has already been made
     if(gradeCache[week]) return;
 
@@ -179,14 +205,16 @@ function generateTable(week){
             </td>
             `;   
         }
-        tableInnards += `<td>${gradeTotal}</td></tr>`;
+        tableInnards += `<td id="total-data-${i}">${gradeTotal}</td></tr>`;
     }
 
     //Averages row
     tableInnards+=`<tr><td>Average</td>`;
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
-        //BUG - get average from jaav server
-        tableInnards+=`<td>Average ${j+1}</td>`;
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -394,11 +422,41 @@ async function updateTableGrades(week) {
 function updateTableGradesComplete(status, response, response_loc, load_loc) {
     console.log(status);
     if(status === 200 || status === 201) {
-        //update cache
         const updatedGrade = JSON.parse(response);
         let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
         let j = assessmentIDToTableCol[curWeek].get(updatedGrade.assessmentId);
-        gradeCache[curWeek][i][j] = newGradeValueDOM.value;
+        const totalDataDOM = document.getElementById(`total-data-${i}`);
+        const avgDataDOM = document.getElementById(`avg-data-${j}`);
+
+        //if this is this first new grade for a column place it inside of our cache
+        if(!assessmentIDToAverageCache[curWeek].get(updatedGrade.assessmentId)) {
+            assessmentIDToAverageCache[curWeek].set(updatedGrade.assessmentId, {
+            'average': 0,
+            'numScores': 0
+            });
+        }
+
+        //Update average + total
+        let avgInfo = assessmentIDToAverageCache[curWeek].get(updatedGrade.assessmentId);
+        let curTotal = avgInfo.average * avgInfo.numScores;
+        let curAssociateTotal = Number(totalDataDOM.innerHTML);
+        console.log(avgInfo, curTotal);
+        curTotal += updatedGrade.score;
+        curAssociateTotal += updatedGrade.score;
+        if(gradeCache[curWeek][i][j] === "*") {
+            //new grade added
+            avgInfo.average = curTotal / (++avgInfo.numScores);
+        } else {
+            //grade updated
+            curTotal += gradeCache[curWeek][i][j];
+            curAssociateTotal += gradeCache[curWeek][i][j];
+            avgInfo.average = curTotal / avgInfo.numScores;
+        }
+        console.log(avgInfo, curTotal);
+        avgDataDOM.innerHTML = avgInfo.average;
+        totalDataDOM.innerHTML = curAssociateTotal;
+        //update cache
+        gradeCache[curWeek][i][j] = updatedGrade.score;
     }
     else if(status === 404) {
         //keep original value - do nothing
@@ -517,6 +575,7 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         if(!gradeCache) {
             await getAssociates();
             gradeCache = new Array(batch.totalWeeks+1);
+            assessmentIDToAverageCache = new Array(batch.totalWeeks+1);
             assessmentIDToTableCol = new Array(batch.totalWeeks+1);
             associateIDToTableRow = new Array(batch.totalWeeks+1);
             assessmentsArr = new Array(batch.totalWeeks+1);
@@ -535,6 +594,7 @@ async function batchData_complete(status, response, response_loc, load_loc) {
         //Get assessments and grades for the week if we didnt already
         if(!gradeCache[curWeek]) {
             await getAssessmentsForWeek(curWeek);
+            await getAveragesForWeek(curWeek);
             await getBatchGradesForWeek(curWeek);
         }
         generateTable(curWeek); 
