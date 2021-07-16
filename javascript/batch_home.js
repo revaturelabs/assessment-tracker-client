@@ -197,7 +197,93 @@ function generateTable(week){
         }
     }
 }
+// creates default chart and associates list on load
+async function generateChart(week){
+    let associateArrNumberandName =[];
+    let assessmentsArrNames = [];
+    let averageArrGrades = [];
+    let averageArrGradeIds = [];
+    
+    //Makes associates list for the chart 
+    const chartAssociatesList = document.getElementById("chartAssociatesList");
+    for(let i = 0; i < associates.length; ++i){
+        associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
+    }
+    letchartAssociatesListFill = "";
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="radio" id="${associateArr[0]}" name="chartRadio" value="${associateArr[0]}" onclick='chooseAssociateChart(${week}, ${associateArr[1]})'><label for="${associateArr[0]}">${associateArr[0]}</label>`)
 
+    chartAssociatesList.innerHTML = letchartAssociatesListFill;
+
+    //Makes default chart
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
+    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
+    for(assessmentId of averageArrGradeIds){
+        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
+        console.log(response)
+        if(response.status === 404){
+            averageArrGrades.push(0);
+        }else{
+            let averageGrade = await response.json();
+            averageArrGrades.push(averageGrade);
+        } 
+    }
+    let data = {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: 'rgb(255, 99, 132)', 
+            borderColor: 'rgb(255, 99, 132)',
+            data: averageArrGrades,
+        }]
+    };
+    const config = {
+        type: 'line',
+        data,
+        options: {}
+    };
+
+    gradeChart = new Chart(
+        document.getElementById('gradeChart'),
+        config
+      );
+}
+// creates chart depending on who you select
+async function chooseAssociateChart(week, associateArrNumber){
+    let assessmentsArrNames = [];
+    let associatesArrGrades = [];
+    let averageArrGrades = [];
+    let averageArrGradeIds = [];
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle))
+    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId))
+    gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
+    for(assessmentId of averageArrGradeIds){
+        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
+        console.log(response)
+        if(response.status === 404){
+            averageArrGrades.push(0)
+        }else{
+            let averageGrade = await response.json();
+            averageArrGrades.push(averageGrade)
+        } 
+    }
+    gradeChart.data= {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: 'rgb(255, 99, 132)', 
+            borderColor: 'rgb(255, 99, 132)',
+            data: averageArrGrades,
+        },{
+            label: "Associate's Grades",
+            backgroundColor:'#F0A73C',
+            borderColor: '#F0A73C',
+            data: associatesArrGrades,
+        }]};
+        gradeChart.update();
+}
+
+
+//Is this used anymore? Can we delete? 
 async function addWeek(totalWeeks) {
     let holder = "";
     for (i = 1; i <= totalWeeks; i++) {
@@ -400,7 +486,8 @@ async function batchData_complete(status, response, response_loc, load_loc) {
             await getAssessmentsForWeek(curWeek);
             await generateGradeCache(curWeek);
         }
-        generateTable(curWeek); 
+        generateTable(curWeek);
+        generateChart(curWeek);
         
         //action if code 201
     } else if(status == 201) {
@@ -480,6 +567,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         assessmentIDToTableCol[curWeek].set(newJson.assessmentId, j);
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
+        generateChart(curWeek);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc

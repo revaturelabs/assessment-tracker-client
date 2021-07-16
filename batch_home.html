@@ -59,14 +59,17 @@
                 <a class="nav-link text-dark d-flex align-items-center justify-content-center justify-content-md-start" title="Batch" href="batch_home.html"><i class="fa fa-users" aria-hidden="true"></i>&nbsp;<span class="d-none d-md-inline">Batch</span></a>
             </nav>
             <div id="mainbody" class="col col-10 col-md-10 mainbody bg-darker text-light p-5">
+                
                 <div id="batchLoader" class="d-flex justify-content-center"></div>
                 <!-- --------PANELS------------ -->
                 <div id="panels">
                     
                 </div>
             </div>
-
-
+            <div>
+                <canvas id="gradeChart"></canvas>
+            </div>
+            <div id="chartAssociatesList"></button></div>
         </main>
         
         <footer id="modalHolder">
@@ -244,9 +247,10 @@
                 </div>
             </div>
         </footer>
-
+        
         <!-- Page HTML Code End -->
         <!-- Optional JavaScript -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
         <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
