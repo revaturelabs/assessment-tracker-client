@@ -226,19 +226,24 @@ function generateTable(week){
 //The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
 async function updateAssessInfo(typeId, catId) {
     let typeName = "";
+    let typeNum = 0;
 
     switch (typeId) {
         case 1:
             typeName = "QC";
+            typeNum = 100;
             break;
         case 2:
             typeName = "Quiz";
+            typeNum = 40;
             break;
         case 3:
             typeName = "One-on-Ones";
+            typeNum = 60;
             break;
         case 4:
             typeName = "Project";
+            typeNum = 80;
             break;
     }
 
@@ -252,6 +257,7 @@ async function updateAssessInfo(typeId, catId) {
 
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
+    document.getElementById('assessWeightText').innerText = "Default weight is "+String(typeNum);
 }
 
 function getCategoryNameComplete(status, response, response_loc, load_loc) {
