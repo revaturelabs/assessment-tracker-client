@@ -199,11 +199,6 @@ async function createBatch() {
 			trackInput = "";
 			end = "";
 		}
-		else{
-			alert("Batch Was not created Successfully");
-		}
-		
-		
 	} 
 	else {
 		alert("Something went wrong.");
