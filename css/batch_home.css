@@ -8,3 +8,11 @@
 .assess-panel {
     max-height: 100px;
 }
+
+.hidden{
+    display: none;
+}
+
+.active{
+    display:block;
+}
