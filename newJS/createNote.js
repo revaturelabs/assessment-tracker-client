@@ -93,21 +93,25 @@ const toggleNoteModalAlert = function(){
 
 const submitNote = async function(e){
     try{
+        //submitNoteBtn.disabled = true;
         if(!noteTextArea.value) throw new Error("Message text cannot be null.");
         if(!targetNote.id){
             //1) POST
             targetNote.cont = noteTextArea.value;
             await createNote(targetNote);
+            toggleAlert(true, "Created note successfully.");
         }else{
             //2) ...or PUT
             targetNote.cont = noteTextArea.value;
             await updateNote(targetNote);
+            toggleAlert(true, "Updated note successfully.");
         }
         //update UI
         resetNoteModal();
     }catch(err){
         submitNoteBtn.disabled = true;
         toggleNoteModalAlert();
+        toggleAlert();
     }
 }
 

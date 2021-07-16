@@ -123,14 +123,19 @@ function generateTable(week){
     //Setup
     const tableContainerDOM = document.getElementById("table-container");
     const buttonHTML = `
-    <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
-    class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
-       <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
-    </button>
-    <button id="table_submit_button" type="submit" class="btn btn-info" data-dismiss="modal"
-        onclick="updateTableGrades(${week})">
-        Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
-    </button>`;
+    <div class="alert alert-primary hidden" id="batch_home_alerts" role="alert">
+            This is a light alert—check it out!
+    </div>
+    <div class = "d-flex">
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
+        <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
+        </button>
+        <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
+            onclick="updateTableGrades(${week})">
+            Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
+        </button>
+    </div>`;
    //Empty assessment list
     if(!assessmentsArr[week]) {
         tableContainerDOM.innerHTML = "-No Assessments Yet-" + buttonHTML;
@@ -934,4 +939,22 @@ function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 404){
         document.getElementById(response_loc).innerHTML = response;
     }
+}
+
+/**
+ * This function toggles the alert in batch_home.html 
+ *@param {boolean} isSuccessful flag to indicate if success or not
+ *@param {string} message the message you want to display on the alert
+ **/
+const toggleAlert = function(isSuccessful, message){
+    const alert = document.getElementById('batch_home_alerts');
+
+    alert.innerHTML = message;
+    if(isSuccessful) alert.className = 'alert alert-success show';
+    else alert.className = 'alert alert-danger show';
+
+    setTimeout(() => {
+        alert.className = "alert alert-primary hidden";
+        alert.innerHTML = "";
+    }, 1500);
 }
