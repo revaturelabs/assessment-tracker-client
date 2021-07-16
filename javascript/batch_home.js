@@ -186,7 +186,7 @@ function generateTable(week){
     tableInnards+=`<tr><td>Average</td>`;
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         //BUG - get average from jaav server
-        tableInnards+=`<td>Average ${j+1}</td>`;
+        tableInnards+=`<td id=average${j+1}>Average ${j+1}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
