@@ -223,11 +223,9 @@ function generateTable(week){
 
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
-//The Category switch should be replaced with a fetch request to get the category name ASAP:
-//Trainers can make new Categories and this switch only accounts for hard-coded ones, so any new category will only show up as 'Other'.
-function updateAssessInfo(typeId, catId) {
+//The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
+async function updateAssessInfo(typeId, catId) {
     let typeName = "";
-    let catName = "";
 
     switch (typeId) {
         case 1:
@@ -243,37 +241,29 @@ function updateAssessInfo(typeId, catId) {
             typeName = "Project";
             break;
     }
-    switch (catId) {
-        case 1:
-            catName = "Swagger";
-            break;
-        case 2:
-            catName = "Testing";
-            break;
-        case 3:
-            catName = "DevOps";
-            break;
-        case 4:
-            catName = "AWS";
-            break;
-        case 5:
-            catName = "Java";
-            break;
-        case 6:
-            catName = "HTTP";
-            break;
-        case 7:
-            catName = "REST";
-            break;
-        case 8:
-            catName = "Python";
-            break;
-        default:
-            catName = "Other";
-            break;
-    }
-    document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName;
+
+    let response_func = getCategoryNameComplete;
+    let endpoint =  `categories/${catId}`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
+}
+
+function getCategoryNameComplete(status, response, response_loc, load_loc) {
+    if(status==200){
+        //console.log("Success");
+        let catName = JSON.parse(response);
+        //console.log(catName.name);
+        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName.name;
+    }else{
+        console.log("Potential Failure");
+        console.log(JSON.parse(response));
+    }
 }
 
 async function addWeek(totalWeeks) {
