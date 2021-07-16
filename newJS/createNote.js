@@ -5,6 +5,7 @@ const noteTextArea = document.getElementById('note_text');
 const submitNoteBtn = document.getElementById('submit_new_note_btn');
 const closeNoteModal = document.getElementById('close_note_modal_btn');
 const modalAlert = document.getElementById('modal_alert');
+const modalContainer = document.querySelector('.modal.fade');
 
 let notes;  
 let targetNote;
@@ -90,21 +91,23 @@ const toggleNoteModalAlert = function(){
     modalAlert.classList.toggle('active');
 }
 
-const submitNote = async function(){
-    try{
-        if(noteTextArea.value === '') throw new Error("Message text cannot be null.");
+const submitNote = async function(e){
+    try{e.pr
+        if(!noteTextArea.value) throw new Error("Message text cannot be null.");
         submitNoteBtn.disabled = true;
         if(!targetNote.id){
             //1) POST
             targetNote.cont = noteTextArea.value;
-            await createNote(targetNote);
+            //await createNote(targetNote);
         }else{
             //2) ...or PUT
             targetNote.cont = noteTextArea.value;
-            await updateNote(targetNote);
+            //await updateNote(targetNote);
         }
         //update UI
         resetNoteModal();
+        modalContainer.style.display = 'none';
+        modalContainer.classList.remove('show');
     }catch(err){
         submitNoteBtn.disabled = true;
         toggleNoteModalAlert();
