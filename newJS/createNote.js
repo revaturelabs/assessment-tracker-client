@@ -32,7 +32,7 @@ const getAllNotes = async function(){
 const createNote = async function(note){
     const method = 'POST';
     const url = `${base_url}notes`;
-    cbFunction = (...params) => {}
+    const cbFunction = (...params) => {}
     await ajaxCaller(method, url, cbFunction, null, null, note);
 }
 
