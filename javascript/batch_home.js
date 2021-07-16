@@ -7,8 +7,6 @@ let onNotes = offPage;
 let state={};
 state.batchId = window.localStorage["batchId"];
 if (window.localStorage["batchId"]){
-    console.log("batchId already stored");
-    console.log(window.localStorage["batchId"]);
 }else{
     localStorage.setItem("batchId", null);
 }
@@ -20,6 +18,7 @@ let batch = {
     currentWeek: 71,
     totalWeeks: 0
 }
+
 let assesssments = new Object();
 //Table variables
 let associates = new Object();
@@ -69,7 +68,6 @@ function getBatchGradesForWeekComplete(status, response, response_loc, load_loc)
     if(status === 200) {
         generateGradeCache(curWeek);
         const gradesForWeek = JSON.parse(response);
-        console.log(gradesForWeek);
         for(let g = 0; g < gradesForWeek.length; ++g) {
             let i = associateIDToTableRow[curWeek].get(gradesForWeek[g].associateId);
             let j = assessmentIDToTableCol[curWeek].get(gradesForWeek[g].assessmentId);
@@ -179,7 +177,9 @@ function generateTable(week){
     //Associate name row
     tableInnards+=`</thead><tbody>`;
     for(let i = 0; i < associates.length; ++i) {
-        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" class="toggle_create_note_modal_btn ${associates[i].id}">${associates[i].firstName}</td>`;
+        tableInnards+=`<tr><td id="associate-name-${i}" style="cursor:pointer;" 
+        data-toggle="modal" data-target="#create_note_modal" class="toggle_create_note_modal_btn" 
+        data-id="${associates[i].id}">${associates[i].firstName}</td>`;
         
         //Grade data
         let gradeTotal = 0;
