@@ -17,7 +17,7 @@ let batch = {
     startDate: "",
     currentWeek: 71,
     totalWeeks: 0
-}
+};
 
 let assesssments = new Object();
 //Table variables
@@ -57,7 +57,7 @@ function pageDataToLoad() {
 const panels = document.getElementById("panels");
 async function getBatchGradesForWeek(week) {
     let response_func = getBatchGradesForWeekComplete;
-    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`;
     let url = java_base_url + endpoint;
     let request_type = "GET";
     let response_loc = `table-container`;
@@ -706,6 +706,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
         generateChart(curWeek);
+        return newJson.assessmentId;
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
@@ -1007,10 +1008,41 @@ function executePreLoadScores() {
     });
 }
 
+//list of categories (category ID's) to add upon submit
+let pendingCategories = [];
+let assessment_id;
+let category_id;
+let cur_category;
 function checkValid(){
-    let form = document.getElementById('createAssessmentForm');
+    let form = document.getElementById("createAssessmentForm");
     if (form.checkValidity() === true) {
-        createAssessment();
+        assessment_id = createAssessment();
+        for(category of pendingCategories){
+            category_id = category.categoryId
+            cur_category = category;
+            postCategory();
+        }
+    }
+}
+
+async function postCategory(){
+    let request_type = "POST";
+    let endpoint = `/assessments/${assessment_id}/categories/${category_id}"`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'text': cur_category.name};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+
+function postCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        console.log(JSON.parse(response));
+        toggleAlert(true, "Category successfully created.");
+    }
+    else{
+        toggleAlert(false, "Failed to post category.");
     }
 }
 
@@ -1021,23 +1053,20 @@ async function newCategory(){
     let response_func = newCategory_Complete;
     let response_loc = "";
     let load_loc = "";
-    let jsonData = {'text': document.getElementById("create_category_button").innerHTML};
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    let jsonData = {'text': document.getElementById("new_category").innerHTML};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         console.log(JSON.parse(response));
-
+        document.getElementById("new_category").value = "";
         toggleAlert(true, "Category successfully created.");
     }
     else{
         toggleAlert(false, "Failed to create category.");
     }
 }
-
-//list of categories (category ID's) to add upon submit
-let pendingCategories = [];
 
 async function getCategories() {
     let response_func = getCategories_Complete;
@@ -1049,16 +1078,17 @@ async function getCategories() {
     let jsonData = false;
 
     
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+let categories;
 function getCategories_Complete(status, response, response_loc, load_loc){
-    if(status==200){
+    if(status===200){
         //console.log("Success");
-        let categories = JSON.parse(response);
+        categories = JSON.parse(response);
         console.log(categories);//debugging
 
-        select = document.getElementById("category-select");
+        let select = document.getElementById("category-select");
         let category;
         for(let i=0;i<categories.length;i++){
             category = categories[i];
@@ -1068,7 +1098,7 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 option.id = category.name;
                 option.value = category.name;
                 option.innerHTML = category.name;
-                option.onclick = addCategoryList(category);
+                // option.onclick = addCategoryList(category);
                 select.appendChild(option);
                 
             }
@@ -1079,23 +1109,46 @@ function getCategories_Complete(status, response, response_loc, load_loc){
     }
 }
 
+async function addCategory(){
+    if(document.getElementById("category-select").value === null){//no option selected upon an add
+        toggleAlert(false, "Please select a category.");
+        return;
+    }
+    let value = document.getElementById("category-select").value;
+    let category;
+    for(let i=0;i<categories.length;i++){
+        category = categories[i];
+        if(category.name === value){
+            addCategoryList(category);//add to list, will POST all upon clicking submit button
+            document.getElementById("category-select").selectedIndex = -1;
+        }
+    }
+}
+
 function addCategoryList(category){
-    if(pendingCategories.indexOf(category.categoryId) != -1){//if category already in pending list
+    if(pendingCategories.indexOf(category) !== -1){//if category already in pending list
         toggleAlert(false, "Category already added.");
         return;
     }
     let li = document.getElementById("category-list");
     li.innerHTML += `
-    <li>${category.name}
-    <button style="float:right" id="cancel${category.categoryId}" type="button" class="btn btn-warning" data-dismiss="modal" onclick="cancel(${category})">Cancel<i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+    <li id="li${category.name}">${category.name}
+    <button style="float:right" id="cancel${category.categoryId}" type="button" class="btn btn-warning" onclick="cancel(${category})">Cancel<i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
     </li><br />`;
-    pendingCategories.push(category.categoryId);
+    pendingCategories.push(category);
 }
 
 function cancel(category){
-    pendingCategories.pop(category.categoryId);
-    let rem = document.getElementById(category.name);
-    rem.parentNode.removeChild(rem);
+    pendingCategories.pop(category);
+    let list = document.getElementById("category-list");
+    let i = 0;
+    for(let element of list){
+        if(element.id == category.categoryId){
+            list.removeChild(list[i]);
+            return;
+        }
+        i++;
+    }
 }
 
 /**
