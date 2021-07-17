@@ -17,7 +17,7 @@ let batch = {
     startDate: "",
     currentWeek: 71,
     totalWeeks: 0
-}
+};
 
 let assesssments = new Object();
 //Table variables
@@ -58,7 +58,7 @@ function pageDataToLoad() {
 const panels = document.getElementById("panels");
 async function getBatchGradesForWeek(week) {
     let response_func = getBatchGradesForWeekComplete;
-    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`;
     let url = java_base_url + endpoint;
     let request_type = "GET";
     let response_loc = `table-container`;
@@ -1070,10 +1070,45 @@ function executePreLoadScores() {
     });
 }
 
-function checkValid(){
-    let form = document.getElementById('createAssessmentForm');
+//list of categories (category ID's) to add upon submit
+let pendingCategories = new Map();
+let assessment_id;
+let category_id;
+let cur_category;
+async function checkValid(){
+    let form = document.getElementById("createAssessmentForm");
     if (form.checkValidity() === true) {
-        createAssessment();
+        await createAssessment();//creates new assessment
+        
+        for([cat_name, cat_id] of pendingCategories){
+            await postCategory(cat_name, cat_id);//creates all pending categories
+        }
+    }
+    displayCategory();
+}
+
+async function postCategory(cat_name, cat_id){
+    let request_type = "POST";
+    arr = assessmentsArr[curWeek].length-1;
+    let endpoint = `assessments/${assessmentsArr[curWeek][arr].assessmentId}/categories/${cat_id}`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'name': cat_name, 'id': cat_id};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+
+function postCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        console.log(JSON.parse(response));
+        toggleAlert(true, "Category successfully created.");
+        pendingCategories.clear();
+        console.log(pendingCategories);
+        document.getElementById("assessment-title").value = "";
+    }
+    else{
+        toggleAlert(false, "Failed to post category.");
     }
 }
 
@@ -1084,14 +1119,14 @@ async function newCategory(){
     let response_func = newCategory_Complete;
     let response_loc = "";
     let load_loc = "";
-    let jsonData = {'text': document.getElementById("create_category_button").innerHTML};
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    let jsonData = {'name': document.getElementById("new-category").value};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         console.log(JSON.parse(response));
-
+        document.getElementById("new-category").value = "";
         toggleAlert(true, "Category successfully created.");
     }
     else{
@@ -1109,28 +1144,82 @@ async function getCategories() {
     let jsonData = false;
 
     
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+let categories;
 function getCategories_Complete(status, response, response_loc, load_loc){
-    if(status==200){
+    if(status===200){
         //console.log("Success");
-        let categories = JSON.parse(response);
+        categories = JSON.parse(response);
         console.log(categories);//debugging
 
-        select = document.getElementById("category-select");
-        for(let category of categories){
-            let option = document.createElement(`option`);
-            option.value = category.name;
-            option.innerHTML = category.name;
-            option.onclick = "temp";
-            select.appendChild(option);
+        let select = document.getElementById("category-select");
+        let category;
+        for(let i=0;i<categories.length;i++){
+            category = categories[i];
+            console.log(category);
+            if(document.getElementById(category.name) == null){
+                let option = document.createElement(`option`);
+                option.id = category.name;
+                option.value = category.name;
+                option.innerHTML = category.name;
+                // option.onclick = addCategoryList(category);
+                select.appendChild(option);
+                
+            }
         }
     }else{
         console.log("Potential Failure");
         console.log(JSON.parse(response));
     }
 }
+
+async function addCategory(){
+    if(document.getElementById("category-select").value == null){//no option selected upon an add
+        toggleAlert(false, "Please select a category.");
+        return;
+    }
+    let value = document.getElementById("category-select").value;
+    let category;
+    for(let i=0;i<categories.length;i++){
+        category = categories[i];
+        if(category.name == value){
+            addCategoryList(category);//add to list, will POST all upon clicking submit button
+            document.getElementById("category-select").selectedIndex = -1;
+        }
+    }
+    displayCategory();
+}
+
+function addCategoryList(category){
+    if(pendingCategories.has(category.name)){//if category already in pending list
+        toggleAlert(false, "Category already added.");
+        return;
+    }
+    else{
+        pendingCategories.set(category.name, category.categoryId);
+    }
+}
+
+function cancelCategory(category_name){
+    
+    pendingCategories.delete(category_name.id);
+    displayCategory();
+}
+
+function displayCategory(){
+    let li = document.getElementById("category-list");
+    li.innerHTML = ``;
+    for(let [cat_name, cat_id] of pendingCategories){
+        li.innerHTML += `
+        <li id="li${cat_name}">${cat_name}
+        <button style="float:right" id="cancel${cat_id}" type="button" class="remove-row" onclick="cancelCategory(${cat_name})">Cancel<i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+        </li><br />`;
+    }
+       
+}
+
 
 /**
  * This function toggles the alert in batch_home.html 
