@@ -16,3 +16,82 @@
 .table-container{
     overflow: auto;
 }
+.plusBox {
+    margin-left: auto;
+    margin-right: auto;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+  }
+.chartBox{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-wrap: wrap;
+        flex-wrap: wrap;
+    overflow: hidden;
+    -webkit-transition: max-height .5s ease-out;
+    transition: max-height .5s ease-out;
+}
+.inactive{
+    max-height: 0;
+}
+.gradeChart{
+    width: 75%;
+}
+.chartAssociatesList{
+    width: 25%;
+    overflow: auto;
+}
+.plus__btn {
+    border: none;
+    margin-top: 12px;
+    margin-left: 15px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    display: block;
+  }
+.plus {
+    -webkit-transform: translate(-50%, -50%) rotate(0);
+            transform: translate(-50%, -50%) rotate(0);
+    width: 1rem;
+    height: 2px;
+    -webkit-transition: -webkit-transform .2s ease-out;
+    transition: -webkit-transform .2s ease-out;
+    transition: transform .2s ease-out;
+    transition: transform .2s ease-out, -webkit-transform .2s ease-out;
+    display: block;
+    background: white;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    cursor: pointer;
+  }
+  .plus::after {
+    -webkit-transform: translateY(0px) rotate(90deg);
+    transform: translateY(0px) rotate(90deg);
+  }
+  .plus--acitve::after {
+    -webkit-transform: translateY(0px) rotate(0);
+            transform: translateY(0px) rotate(0);
+  }
+  
+  .plus::after {
+    content: "";
+    -webkit-transition: -webkit-transform .2s ease-out;
+    transition: -webkit-transform .2s ease-out;
+    transition: transform .2s ease-out;
+    transition: transform .2s ease-out, -webkit-transform .2s ease-out;
+    display: block;
+    border-radius: 1px;
+    background: white;
+    position: absolute;
+    height: 2px;
+    width: 100%;
+    cursor: pointer;
+  }
