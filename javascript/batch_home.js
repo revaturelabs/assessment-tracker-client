@@ -39,6 +39,7 @@ function pageDataToLoad() {
     if (state.batchId != null) {
         batch.id = state.batchId;
         batchData(batch.id, batch);
+        
     } else {
         document.getElementById("mainbody").innerHTML = `
     <div id="batchLoader" class="d-flex justify-content-center"></div>
@@ -158,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week})">
+            onclick="updateTableGrades(${week});generateChart(${week})">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -168,6 +169,10 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
+    <div>
+        <canvas id="gradeChart"></canvas>
+        <div id="chartAssociatesList"></button></div>
+    </div>  
     <table class="table table-dark table-striped table-hover">
         <thead>
             <th>Associate Name</th>
@@ -253,34 +258,39 @@ function generateTable(week){
         }
     }
 }
+
+//creates colors for every associate when the page loads
+associateChartColor = [];
+function generateColors(){
+    for(let i = 0; i < associates.length; ++i){
+        associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
+    }
+}
 // creates default chart and associates list on load
 async function generateChart(week){
+    if(associateChartColor.length != associates.length){
+        generateColors();
+    }
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
-    
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
     letchartAssociatesListFill = "";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="radio" id="${associateArr[0]}" name="chartRadio" value="${associateArr[0]}" onclick='chooseAssociateChart(${week}, ${associateArr[1]})'><label for="${associateArr[0]}">${associateArr[0]}</label>`)
-
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">${associateArr[0]}</label>`)
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
-
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
-    for(assessmentId of averageArrGradeIds){
-        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
-        if(response.status === 404){
-            averageArrGrades.push(0);
-        }else{
-            let averageGrade = await response.json();
-            averageArrGrades.push(averageGrade);
-        } 
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        averageArrGrades.push(avg)
     }
     let data = {
         labels: assessmentsArrNames,
@@ -299,45 +309,31 @@ async function generateChart(week){
     gradeChart = new Chart(
         document.getElementById('gradeChart'),
         config
-      );
+    );
 }
 // creates chart depending on who you select
-async function chooseAssociateChart(week, associateArrNumber){
-    let assessmentsArrNames = [];
+async function generateChartUpdate(week, associateArrNumber, associateFullName){
     let associatesArrGrades = [];
-    let averageArrGrades = [];
-    let averageArrGradeIds = [];
-    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle))
-    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId))
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
-    for(assessmentId of averageArrGradeIds){
-        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
-        console.log(response)
-        if(response.status === 404){
-            averageArrGrades.push(0)
-        }else{
-            let averageGrade = await response.json();
-            averageArrGrades.push(averageGrade)
-        } 
+    //Sees if you have checked or unchecked
+    const checkbox = document.getElementById(`checkbox${associateArrNumber}`).checked;
+    if(checkbox === true){
+        const newData = {
+            label: associateFullName,
+            backgroundColor: associateChartColor[associateArrNumber],
+            borderColor: associateChartColor[associateArrNumber],
+            data: associatesArrGrades};
+        gradeChart.data.datasets.push(newData);
+    }else{
+        for(let i = 0; i < gradeChart.data.datasets.length; ++i) {
+            if(gradeChart.data.datasets[i].label === associateFullName){
+                gradeChart.data.datasets.splice(i, 1);
+            }
+        }
     }
-    gradeChart.data= {
-        labels: assessmentsArrNames,
-        datasets: [{
-            label: 'Class Average',
-            backgroundColor: 'rgb(255, 99, 132)', 
-            borderColor: 'rgb(255, 99, 132)',
-            data: averageArrGrades,
-        },{
-            label: "Associate's Grades",
-            backgroundColor:'#F0A73C',
-            borderColor: '#F0A73C',
-            data: associatesArrGrades,
-        }]};
-        gradeChart.update();
+
+    gradeChart.update();
 }
-
-
-
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
 //The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
