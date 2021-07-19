@@ -178,6 +178,9 @@ function generateTable(week){
             <th>Associate Name</th>
     `;
     //Assessment columns
+
+
+
     for(let i = 0; i < assessmentsArr[week].length; ++i) {
         tableInnards+=`
         <th id="assessment-name-${i}"><a onclick="
@@ -189,6 +192,7 @@ function generateTable(week){
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
+        getCategoryByAssessment(${assessmentsArr[week][i].assessmentId});
         " id="assessment_${assessmentsArr[week][i].assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessmentsArr[week][i].assessmentTitle}</a>
         </th>`;
     }
@@ -1164,6 +1168,32 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 
             }
         }
+    }else{
+        console.log("Potential Failure");
+    }
+}
+
+async function getCategoryByAssessment(assessId){
+    let response_func = getCategoryByAssessment_Complete;
+    let endpoint =  `assessments/${assessId}/categories`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+
+function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
+    if(status===200){
+        categories = JSON.parse(response);
+        let catText = "";
+        for(let i=0;i<categories.length;i++){
+            category = categories[i];
+            catText += category.name+", ";
+        }
+        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
     }else{
         console.log("Potential Failure");
     }
