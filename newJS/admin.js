@@ -85,7 +85,7 @@ function isInputValid(email, firstName, lastName) {
 
 function validateBatchInfo(name, track, trainer, cotrainer, startDate, endDate){
 	
-	if(name === "" | track==="" | trainer === "" | cotrainer === "" | endDate === ""){
+	if(name === "" | track==="" | trainer === "" | endDate === ""){
 		return false;
 	} 
 
@@ -159,8 +159,12 @@ async function createBatch() {
 	let endDate = new Date(end).getTime() / 1000;
 	const trainerOption = trainerInput.options[trainerInput.selectedIndex];
 	const cotrainerOption = coTrainerInput.options[coTrainerInput.selectedIndex];
+	console.log(cotrainerOption);
 	const trainerId = Number(trainerOption.getAttribute("name"));
-	const cotrainerId = Number(cotrainerOption.getAttribute("name"));
+	let cotrainerId = null;
+	if(cotrainerOption.innerText !== "--Select a Cotrainer--")
+		cotrainerId = Number(cotrainerOption.getAttribute("name"));
+	console.log(cotrainerId);
 	let associateStatus = false;
 	let trainerStatus = false;
 
@@ -187,7 +191,11 @@ async function createBatch() {
 		const batchId = Number(await resp.json());
 		associateStatus = await registerAssociatesToBatch(batchId);
 		const leadStatus = await registerTrainerToBatch(trainerId, batchId, "Lead");
-		const coLeadStatus = await registerTrainerToBatch(cotrainerId, batchId, "Co-lead");
+		let coLeadStatus = false;
+		if(cotrainerId !== null & cotrainerId !== undefined)
+			coLeadStatus = await registerTrainerToBatch(cotrainerId, batchId, "Co-lead");
+		else
+			coLeadStatus = true;
 		trainerStatus = leadStatus && coLeadStatus;
 		if(associateStatus & trainerStatus){
 			alert("Batch created Successfully");
