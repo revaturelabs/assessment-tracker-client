@@ -219,7 +219,7 @@ function generateTable(week){
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
         if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${parseInt(avg, 10).toFixed(2)}</td>`;
+        tableInnards+=`<td id="avg-data-${j}">${parseFloat(avg, 10).toFixed(2)}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -538,7 +538,7 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
             avgInfo.average = curTotal / avgInfo.numScores;
         }
         console.log(avgInfo, curTotal);
-        avgDataDOM.innerHTML = avgInfo.average;
+        avgDataDOM.innerHTML = parseFloat(avgInfo.average, 10).toFixed(2);
         totalDataDOM.innerHTML = curAssociateTotal;
         //update cache
         gradeCache[curWeek][i][j] = updatedGrade.score;
