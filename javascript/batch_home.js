@@ -154,7 +154,7 @@ function generateTable(week){
             This is a light alert—check it out!
     </div>
     <div class = "d-flex">
-        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week};clearFields();" id="addAssessmentBtn" 
         class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
@@ -1109,7 +1109,7 @@ function postCategory_Complete(status, response, response_loc, load_loc){
 function clearFields(){
     document.getElementById("assessment-title").value = "";
     pendingCategories.clear();
-
+    displayCategories();
 }
 
 async function newCategory(){
