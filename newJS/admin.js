@@ -158,7 +158,7 @@ async function createBatch() {
 	const startDate = new Date(start).getTime() / 1000;
 	const endDate = new Date(end).getTime() / 1000;
 	const trainerOption = trainerInput.options[trainerInput.selectedIndex];
-	const cotrainerOption = coTrainerInput.options[trainerInput.selectedIndex];
+	const cotrainerOption = coTrainerInput.options[coTrainerInput.selectedIndex];
 	const trainerId = Number(trainerOption.getAttribute("name"));
 	const cotrainerId = Number(cotrainerOption.getAttribute("name"));
 	console.log(trainerId);

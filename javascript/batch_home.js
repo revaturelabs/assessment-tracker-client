@@ -17,7 +17,7 @@ let batch = {
     startDate: "",
     currentWeek: 71,
     totalWeeks: 0
-}
+};
 
 let assesssments = new Object();
 //Table variables
@@ -39,6 +39,7 @@ function pageDataToLoad() {
     if (state.batchId != null) {
         batch.id = state.batchId;
         batchData(batch.id, batch);
+        
     } else {
         document.getElementById("mainbody").innerHTML = `
     <div id="batchLoader" class="d-flex justify-content-center"></div>
@@ -58,7 +59,7 @@ function pageDataToLoad() {
 const panels = document.getElementById("panels");
 async function getBatchGradesForWeek(week) {
     let response_func = getBatchGradesForWeekComplete;
-    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`
+    let endpoint =  `batches/${window.localStorage["batchId"]}/week/${week}/grades`;
     let url = java_base_url + endpoint;
     let request_type = "GET";
     let response_loc = `table-container`;
@@ -158,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week})">
+            onclick="updateTableGrades(${week});generateChart(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -168,6 +169,10 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
+    <div>
+        <canvas id="gradeChart"></canvas>
+        <div id="chartAssociatesList"></button></div>
+    </div>  
     <table class="table table-dark table-striped table-hover">
         <thead>
             <th>Associate Name</th>
@@ -253,34 +258,39 @@ function generateTable(week){
         }
     }
 }
+
+//creates colors for every associate when the page loads
+associateChartColor = [];
+function generateColors(){
+    for(let i = 0; i < associates.length; ++i){
+        associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
+    }
+}
 // creates default chart and associates list on load
 async function generateChart(week){
+    if(associateChartColor.length != associates.length){
+        generateColors();
+    }
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
-    
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
     letchartAssociatesListFill = "";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="radio" id="${associateArr[0]}" name="chartRadio" value="${associateArr[0]}" onclick='chooseAssociateChart(${week}, ${associateArr[1]})'><label for="${associateArr[0]}">${associateArr[0]}</label>`)
-
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">${associateArr[0]}</label>`)
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
-
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
-    for(assessmentId of averageArrGradeIds){
-        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
-        if(response.status === 404){
-            averageArrGrades.push(0);
-        }else{
-            let averageGrade = await response.json();
-            averageArrGrades.push(averageGrade);
-        } 
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        averageArrGrades.push(avg)
     }
     let data = {
         labels: assessmentsArrNames,
@@ -299,45 +309,31 @@ async function generateChart(week){
     gradeChart = new Chart(
         document.getElementById('gradeChart'),
         config
-      );
+    );
 }
 // creates chart depending on who you select
-async function chooseAssociateChart(week, associateArrNumber){
-    let assessmentsArrNames = [];
+async function generateChartUpdate(week, associateArrNumber, associateFullName){
     let associatesArrGrades = [];
-    let averageArrGrades = [];
-    let averageArrGradeIds = [];
-    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle))
-    assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId))
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
-    for(assessmentId of averageArrGradeIds){
-        const response = await fetch(`http://34.204.173.118:7001/assessments/${assessmentId}/grades/average`);
-        console.log(response)
-        if(response.status === 404){
-            averageArrGrades.push(0)
-        }else{
-            let averageGrade = await response.json();
-            averageArrGrades.push(averageGrade)
-        } 
+    //Sees if you have checked or unchecked
+    const checkbox = document.getElementById(`checkbox${associateArrNumber}`).checked;
+    if(checkbox === true){
+        const newData = {
+            label: associateFullName,
+            backgroundColor: associateChartColor[associateArrNumber],
+            borderColor: associateChartColor[associateArrNumber],
+            data: associatesArrGrades};
+        gradeChart.data.datasets.push(newData);
+    }else{
+        for(let i = 0; i < gradeChart.data.datasets.length; ++i) {
+            if(gradeChart.data.datasets[i].label === associateFullName){
+                gradeChart.data.datasets.splice(i, 1);
+            }
+        }
     }
-    gradeChart.data= {
-        labels: assessmentsArrNames,
-        datasets: [{
-            label: 'Class Average',
-            backgroundColor: 'rgb(255, 99, 132)', 
-            borderColor: 'rgb(255, 99, 132)',
-            data: averageArrGrades,
-        },{
-            label: "Associate's Grades",
-            backgroundColor:'#F0A73C',
-            borderColor: '#F0A73C',
-            data: associatesArrGrades,
-        }]};
-        gradeChart.update();
+
+    gradeChart.update();
 }
-
-
-
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
 //The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
@@ -1070,11 +1066,50 @@ function executePreLoadScores() {
     });
 }
 
-function checkValid(){
-    let form = document.getElementById('createAssessmentForm');
+//list of categories (category ID's) to add upon submit
+let pendingCategories = new Map();
+let assessment_id;
+let category_id;
+let cur_category;
+async function checkValid(){
+    let form = document.getElementById("createAssessmentForm");
     if (form.checkValidity() === true) {
-        createAssessment();
+        await createAssessment();//creates new assessment
+        
+        for([cat_name, cat_id] of pendingCategories){
+            await postCategory(cat_name, cat_id);//creates all pending categories
+        }
     }
+    displayCategories();
+}
+
+async function postCategory(cat_name, cat_id){
+    let request_type = "POST";
+    arr = assessmentsArr[curWeek].length-1;
+    let endpoint = `assessments/${assessmentsArr[curWeek][arr].assessmentId}/categories/${cat_id}`;
+    let url = java_base_url + endpoint;
+    let response_func = newCategory_Complete;
+    let response_loc = "";
+    let load_loc = "";
+    let jsonData = {'name': cat_name, 'id': cat_id};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+
+function postCategory_Complete(status, response, response_loc, load_loc){
+    if(status === 201){
+        toggleAlert(true, "Category successfully created.");
+        clearFields();
+    }
+    else{
+        toggleAlert(false, "Failed to post category.");
+        clearFields();
+    }
+}
+
+function clearFields(){
+    document.getElementById("assessment-title").value = "";
+    pendingCategories.clear();
+
 }
 
 async function newCategory(){
@@ -1084,14 +1119,13 @@ async function newCategory(){
     let response_func = newCategory_Complete;
     let response_loc = "";
     let load_loc = "";
-    let jsonData = {'text': document.getElementById("create_category_button").innerHTML};
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    let jsonData = {'name': document.getElementById("new-category").value};
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
-        console.log(JSON.parse(response));
-
+        document.getElementById("new-category").value = "";
         toggleAlert(true, "Category successfully created.");
     }
     else{
@@ -1109,28 +1143,77 @@ async function getCategories() {
     let jsonData = false;
 
     
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+let categories;
 function getCategories_Complete(status, response, response_loc, load_loc){
-    if(status==200){
-        //console.log("Success");
-        let categories = JSON.parse(response);
-        console.log(categories);//debugging
-
-        select = document.getElementById("category-select");
-        for(let category of categories){
-            let option = document.createElement(`option`);
-            option.value = category.name;
-            option.innerHTML = category.name;
-            option.onclick = "temp";
-            select.appendChild(option);
+    if(status===200){
+        categories = JSON.parse(response);
+        let select = document.getElementById("category-select");
+        let category;
+        for(let i=0;i<categories.length;i++){
+            category = categories[i];
+            if(document.getElementById(category.name) == null){
+                let option = document.createElement(`option`);
+                option.id = category.name;
+                option.value = category.name;
+                option.innerHTML = category.name;
+                // option.onclick = addCategoryList(category);
+                select.appendChild(option);
+                
+            }
         }
     }else{
         console.log("Potential Failure");
-        console.log(JSON.parse(response));
     }
 }
+
+async function addCategory(){
+    if(document.getElementById("category-select").value == null){//no option selected upon an add
+        toggleAlert(false, "Please select a category.");
+        return;
+    }
+    let value = document.getElementById("category-select").value;
+    let category;
+    for(let i=0;i<categories.length;i++){
+        category = categories[i];
+        if(category.name == value){
+            addCategoryList(category);//add to list, will POST all upon clicking submit button
+            document.getElementById("category-select").selectedIndex = -1;
+        }
+    }
+    displayCategories();
+}
+
+function addCategoryList(category){
+    if(pendingCategories.has(category.name)){//if category already in pending list
+        toggleAlert(false, "Category already added.");
+        return;
+    }
+    else{
+        pendingCategories.set(category.name, category.categoryId);
+    }
+}
+
+function cancelCategory(category_name){
+    
+    pendingCategories.delete(category_name.id);
+    displayCategories();
+}
+
+function displayCategories(){
+    let li = document.getElementById("category-list");
+    li.innerHTML = ``;
+    for(let [cat_name, cat_id] of pendingCategories){
+        li.innerHTML += `
+        <li id="li${cat_name}">${cat_name}
+        <button style="float:right" id="cancel${cat_id}" type="button" class="remove-row" onclick="cancelCategory(${cat_name})">Cancel<i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
+        </li><br />`;
+    }
+       
+}
+
 
 /**
  * This function toggles the alert in batch_home.html 

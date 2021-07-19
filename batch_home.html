@@ -64,11 +64,6 @@
                 <div id="panels">
                 </div>
             </div>
-            <div>
-                <canvas id="gradeChart"></canvas>
-            </div>
-            <div id="chartAssociatesList"></button></div>
-            </div>  
         </main>
         
         <footer id="modalHolder">
@@ -168,7 +163,13 @@
                                     <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Python Quiz" maxlength=25 class="form-control form-control-lg h-50" id="assessment-title" autocomplete="off" required />
 
                                     <label for="category-type" class="col-form-label h3">Category Type:</label>
-                                    <select class="form-control form-control-lg h-50" id="category-select" onclick="getCategories()"></select>
+                                    <select class="form-control form-control-lg h-50" id="category-select" onclick="getCategories()"></select><br />
+                                    <button id="add_category_button" onclick="addCategory()" type="submit" class="btn btn-info">Add &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button><br />
+                                    <div class="cat-list-container">
+                                        <ul id="category-list">
+                                        </ul>
+                                    </div>
+
 
                                     <label for="new-category" class="col-form-label h3">New Category:</label>
                                     <input type="text" pattern="^([_\-\.0-9a-zA-Z\s]+)$" minlength="3" placeholder="ex: Automation" maxlength=25 class="form-control form-control-lg h-50" id="new-category" autocomplete="off" /><br />
@@ -180,7 +181,7 @@
                                 </div>
                                 <div class="modal-footer">
                                     <span id="loadAssessResult"><span id="assessLoad"></span></span>
-                                    <button id="create_assessment_button" onclick="checkValid()" type="submit" class="btn btn-info">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
+                                    <button id="create_assessment_button" onclick="checkValid();" type="submit" class="btn btn-info" data-dismiss="modal">Create &nbsp;<i class="fa fa-plus" aria-hidden="true"></i></button>
                                     <button id="close_assessment_button" type="button" class="btn btn-warning" data-dismiss="modal">Close <i class="fa fa-times-circle-o" aria-hidden="true"></i></button>
                                 </div>
                             </form>
