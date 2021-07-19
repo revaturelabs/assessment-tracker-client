@@ -154,7 +154,7 @@ function generateTable(week){
             This is a light alert—check it out!
     </div>
     <div class = "d-flex">
-        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week};clearFields();" id="addAssessmentBtn" 
         class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
@@ -169,15 +169,26 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
-    <div>
-        <canvas id="gradeChart"></canvas>
-        <div id="chartAssociatesList"></button></div>
+    <div class="plusBox" onclick="flipArrow()">
+        <h5 id="chartBoxHead">Click here to see a chart of the grades</h5>
+        <div class="plus__btn">
+            <span id="plus" class="plus"></span>
+        </div>
+    </div>
+    <div id="chartBox" class="chartBox inactive">
+        <div class="gradeChart">
+            <canvas id="gradeChart"></canvas>
+        </div>
+        <div class="chartAssociatesList" id="chartAssociatesList"></div>
     </div>  
     <table class="table table-dark table-striped table-hover">
         <thead>
             <th>Associate Name</th>
     `;
     //Assessment columns
+
+
+
     for(let i = 0; i < assessmentsArr[week].length; ++i) {
         tableInnards+=`
         <th id="assessment-name-${i}"><a onclick="
@@ -189,6 +200,7 @@ function generateTable(week){
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
+        getCategoryByAssessment(${assessmentsArr[week][i].assessmentId});
         " id="assessment_${assessmentsArr[week][i].assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessmentsArr[week][i].assessmentTitle}</a>
         </th>`;
     }
@@ -223,8 +235,8 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
-        if(avgInfo) avg = parseInt(avgInfo.average, 10).toFixed(2);
-        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
+        if(avgInfo) avg = avgInfo.average;
+        tableInnards+=`<td id="avg-data-${j}">${parseFloat(avg, 10).toFixed(2)}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -266,10 +278,30 @@ function generateColors(){
         associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
     }
 }
-// creates default chart and associates list on load
+//hides and unhides the chart by making its heigh 0 or not
+// Class inactive makes it so that it starts at a max-height: 0
+//isBoxOpen traacks if the chart should be open when the new week is made
+isBoxOpen = false;
+function flipArrow(){
+    const chartBox = document.getElementById('chartBox');
+    const plus = document.getElementById('plus');
+    plus.classList.toggle("plus--acitve")
+    if (chartBox.style.maxHeight){
+        chartBox.style.maxHeight = null;
+        isBoxOpen = false;
+    } else {
+        chartBox.style.maxHeight = chartBox.scrollHeight + 200 + "px";
+        isBoxOpen = true;
+
+    }
+}
+// creates base chart and associates list on load
 async function generateChart(week){
     if(associateChartColor.length != associates.length){
         generateColors();
+    }
+    if(isBoxOpen === true){
+        flipArrow();
     }
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
@@ -280,8 +312,9 @@ async function generateChart(week){
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
-    letchartAssociatesListFill = "";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">${associateArr[0]}</label>`)
+    letchartAssociatesListFill = "<ul>";
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
+    letchartAssociatesListFill += "</ul>";
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
@@ -310,6 +343,11 @@ async function generateChart(week){
         document.getElementById('gradeChart'),
         config
     );
+    //Set the max height of the associates list to the height of the chart so that the list does not over flow
+    let box = document.getElementById('gradeChart');
+    let chartHeight = box.offsetHeight;
+    chartAssociatesList.style.maxHeight=chartHeight + "px";
+
 }
 // creates chart depending on who you select
 async function generateChartUpdate(week, associateArrNumber, associateFullName){
@@ -534,7 +572,7 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
             avgInfo.average = curTotal / avgInfo.numScores;
         }
         console.log(avgInfo, curTotal);
-        avgDataDOM.innerHTML = avgInfo.average;
+        avgDataDOM.innerHTML = parseFloat(avgInfo.average, 10).toFixed(2);
         totalDataDOM.innerHTML = curAssociateTotal;
         //update cache
         gradeCache[curWeek][i][j] = updatedGrade.score;
@@ -1109,7 +1147,7 @@ function postCategory_Complete(status, response, response_loc, load_loc){
 function clearFields(){
     document.getElementById("assessment-title").value = "";
     pendingCategories.clear();
-
+    displayCategories();
 }
 
 async function newCategory(){
@@ -1164,6 +1202,32 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 
             }
         }
+    }else{
+        console.log("Potential Failure");
+    }
+}
+
+async function getCategoryByAssessment(assessId){
+    let response_func = getCategoryByAssessment_Complete;
+    let endpoint =  `assessments/${assessId}/categories`;
+    let url = java_base_url + endpoint;
+    let request_type = "GET";
+    let response_loc = false;
+    let load_loc = false;
+    let jsonData = false;
+
+    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+}
+
+function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
+    if(status===200){
+        categories = JSON.parse(response);
+        let catText = "";
+        for(let i=0;i<categories.length;i++){
+            category = categories[i];
+            catText += category.name+", ";
+        }
+        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
     }else{
         console.log("Potential Failure");
     }
