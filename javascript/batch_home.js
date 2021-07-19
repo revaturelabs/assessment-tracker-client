@@ -154,12 +154,12 @@ function generateTable(week){
             This is a light alert—check it out!
     </div>
     <div class = "d-flex">
-        <button onclick="document.getElementById('assessment-week').innerHTML = ${week}" id="addAssessmentBtn" 
+        <button onclick="document.getElementById('assessment-week').innerHTML = ${week};clearFields();" id="addAssessmentBtn" 
         class="btn btn-secondary border-0 d-block" data-toggle="modal" data-target="#createAssessmentModal">
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="await updateTableGrades(${week});generateChart(${week});clearFields();">
+            onclick="updateTableGrades(${week});generateChart(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -223,8 +223,8 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
-        if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${parseInt(avg, 10).toFixed(2)}</td>`;
+        if(avgInfo) avg = parseInt(avgInfo.average, 10).toFixed(2);
+        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -1080,7 +1080,7 @@ async function checkValid(){
             await postCategory(cat_name, cat_id);//creates all pending categories
         }
     }
-    displayCategory();
+    displayCategories();
 }
 
 async function postCategory(cat_name, cat_id){
@@ -1098,16 +1098,18 @@ async function postCategory(cat_name, cat_id){
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         toggleAlert(true, "Category successfully created.");
+        clearFields();
     }
     else{
         toggleAlert(false, "Failed to post category.");
+        clearFields();
     }
 }
 
 function clearFields(){
     document.getElementById("assessment-title").value = "";
     pendingCategories.clear();
-
+    displayCategories();
 }
 
 async function newCategory(){
@@ -1181,7 +1183,7 @@ async function addCategory(){
             document.getElementById("category-select").selectedIndex = -1;
         }
     }
-    displayCategory();
+    displayCategories();
 }
 
 function addCategoryList(category){
@@ -1197,10 +1199,10 @@ function addCategoryList(category){
 function cancelCategory(category_name){
     
     pendingCategories.delete(category_name.id);
-    displayCategory();
+    displayCategories();
 }
 
-function displayCategory(){
+function displayCategories(){
     let li = document.getElementById("category-list");
     li.innerHTML = ``;
     for(let [cat_name, cat_id] of pendingCategories){
