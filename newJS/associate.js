@@ -7,6 +7,8 @@ async function pageDataToLoad() {
 
 async function loadBatches(associateId) {
     const url = `http://10.58.50.3:5000/associates/${associateId}/batches`;
+    //This endpoint currently doesn't exist in the backend.  Needs to be implemented for this function to work
+//     const url = `${base_url}associates/${associateId}/batches`
     const response = await fetch(url);
     const batches = await response.json();
 
