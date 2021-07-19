@@ -159,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="await updateTableGrades(${week});generateChart(${week});clearFields();">
+            onclick="await updateTableGrades(${week});generateChart(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -1080,7 +1080,7 @@ async function checkValid(){
             await postCategory(cat_name, cat_id);//creates all pending categories
         }
     }
-    displayCategory();
+    displayCategories();
 }
 
 async function postCategory(cat_name, cat_id){
@@ -1098,9 +1098,11 @@ async function postCategory(cat_name, cat_id){
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         toggleAlert(true, "Category successfully created.");
+        clearFields();
     }
     else{
         toggleAlert(false, "Failed to post category.");
+        clearFields();
     }
 }
 
@@ -1181,7 +1183,7 @@ async function addCategory(){
             document.getElementById("category-select").selectedIndex = -1;
         }
     }
-    displayCategory();
+    displayCategories();
 }
 
 function addCategoryList(category){
@@ -1197,10 +1199,10 @@ function addCategoryList(category){
 function cancelCategory(category_name){
     
     pendingCategories.delete(category_name.id);
-    displayCategory();
+    displayCategories();
 }
 
-function displayCategory(){
+function displayCategories(){
     let li = document.getElementById("category-list");
     li.innerHTML = ``;
     for(let [cat_name, cat_id] of pendingCategories){
