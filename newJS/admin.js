@@ -1,13 +1,13 @@
-const unaddedAssoc = document.getElementById("unaddedAssociates");
-const addedAssoc = document.getElementById("addedAssociates");
-const trainerInput = document.getElementById("batchTrainer");
-const coTrainerInput = document.getElementById("batchCoTrainer");
+let unaddedAssoc = document.getElementById("unaddedAssociates");
+let addedAssoc = document.getElementById("addedAssociates");
+let trainerInput = document.getElementById("batchTrainer");
+let coTrainerInput = document.getElementById("batchCoTrainer");
 let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
-//const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
-//const bucketPath = "http://adam-ranieri-batch-1019.s3.amazonaws.com";
-const pythonPath = "http://localhost:5000";
-const bucketPath = "http://localhost:5500";
+const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
+const bucketPath = "http://adam-ranieri-batch-1019.s3.amazonaws.com";
+//const pythonPath = "http://localhost:5000";
+//const bucketPath = "http://localhost:5500";
 
 const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
@@ -191,9 +191,7 @@ async function createBatch() {
 		trainerStatus = leadStatus && coLeadStatus;
 		if(associateStatus & trainerStatus){
 			alert("Batch created Successfully");
-			nameInput = "";
-			trackInput = "";
-			end = "";
+			location.reload();
 		}
 	} 
 	else {
