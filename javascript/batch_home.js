@@ -219,7 +219,7 @@ function generateTable(week){
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
         if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
+        tableInnards+=`<td id="avg-data-${j}">${parseInt(avg, 10).toFixed(2)}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -542,10 +542,14 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
         totalDataDOM.innerHTML = curAssociateTotal;
         //update cache
         gradeCache[curWeek][i][j] = updatedGrade.score;
+        toggleAlert(true, "Successfully updated grade table.");
     }
     else if(status === 404) {
         //keep original value - do nothing
         //BUG - possibly change style to show user a value was invalid
+        toggleAlert(false, "Error updating grade error.");
+    }else if(status >= 500){
+        toggleAlert(false, "Internal service error.");
     }
 }
 
@@ -1220,7 +1224,6 @@ function displayCategory(){
  **/
 const toggleAlert = function(isSuccessful, message){
     const alert = document.getElementById('batch_home_alerts');
-
     alert.innerHTML = message;
     if(isSuccessful) alert.className = 'alert alert-success show';
     else alert.className = 'alert alert-danger show';
