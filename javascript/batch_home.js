@@ -158,7 +158,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week})">
+            onclick="updateTableGrades(${week});clearFields();">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
