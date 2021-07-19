@@ -159,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week});generateChart(${week})">
+            onclick="await updateTableGrades(${week});generateChart(${week});clearFields()">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -1097,15 +1097,17 @@ async function postCategory(cat_name, cat_id){
 
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
-        console.log(JSON.parse(response));
         toggleAlert(true, "Category successfully created.");
-        pendingCategories.clear();
-        console.log(pendingCategories);
-        document.getElementById("assessment-title").value = "";
     }
     else{
         toggleAlert(false, "Failed to post category.");
     }
+}
+
+function clearFields(){
+    document.getElementById("assessment-title").value = "";
+    pendingCategories.clear();
+
 }
 
 async function newCategory(){
@@ -1121,7 +1123,6 @@ async function newCategory(){
 
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
-        console.log(JSON.parse(response));
         document.getElementById("new-category").value = "";
         toggleAlert(true, "Category successfully created.");
     }
@@ -1146,15 +1147,11 @@ async function getCategories() {
 let categories;
 function getCategories_Complete(status, response, response_loc, load_loc){
     if(status===200){
-        //console.log("Success");
         categories = JSON.parse(response);
-        console.log(categories);//debugging
-
         let select = document.getElementById("category-select");
         let category;
         for(let i=0;i<categories.length;i++){
             category = categories[i];
-            console.log(category);
             if(document.getElementById(category.name) == null){
                 let option = document.createElement(`option`);
                 option.id = category.name;
@@ -1167,7 +1164,6 @@ function getCategories_Complete(status, response, response_loc, load_loc){
         }
     }else{
         console.log("Potential Failure");
-        console.log(JSON.parse(response));
     }
 }
 
