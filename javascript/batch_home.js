@@ -169,9 +169,17 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
-    <div>
-        <canvas id="gradeChart"></canvas>
-        <div id="chartAssociatesList"></button></div>
+    <div class="plusBox" onclick="flipArrow()">
+        <h5 id="chartBoxHead">Click here to see a chart of the grades</h5>
+        <div class="plus__btn">
+            <span id="plus" class="plus"></span>
+        </div>
+    </div>
+    <div id="chartBox" class="chartBox inactive">
+        <div class="gradeChart">
+            <canvas id="gradeChart"></canvas>
+        </div>
+        <div class="chartAssociatesList" id="chartAssociatesList"></div>
     </div>  
     <table class="table table-dark table-striped table-hover">
         <thead>
@@ -270,10 +278,30 @@ function generateColors(){
         associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
     }
 }
-// creates default chart and associates list on load
+//hides and unhides the chart by making its heigh 0 or not
+// Class inactive makes it so that it starts at a max-height: 0
+//isBoxOpen traacks if the chart should be open when the new week is made
+isBoxOpen = false;
+function flipArrow(){
+    const chartBox = document.getElementById('chartBox');
+    const plus = document.getElementById('plus');
+    plus.classList.toggle("plus--acitve")
+    if (chartBox.style.maxHeight){
+        chartBox.style.maxHeight = null;
+        isBoxOpen = false;
+    } else {
+        chartBox.style.maxHeight = chartBox.scrollHeight + 200 + "px";
+        isBoxOpen = true;
+
+    }
+}
+// creates base chart and associates list on load
 async function generateChart(week){
     if(associateChartColor.length != associates.length){
         generateColors();
+    }
+    if(isBoxOpen === true){
+        flipArrow();
     }
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
@@ -284,8 +312,9 @@ async function generateChart(week){
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
-    letchartAssociatesListFill = "";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">${associateArr[0]}</label>`)
+    letchartAssociatesListFill = "<ul>";
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
+    letchartAssociatesListFill += "</ul>";
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
@@ -314,6 +343,11 @@ async function generateChart(week){
         document.getElementById('gradeChart'),
         config
     );
+    //Set the max height of the associates list to the height of the chart so that the list does not over flow
+    let box = document.getElementById('gradeChart');
+    let chartHeight = box.offsetHeight;
+    chartAssociatesList.style.maxHeight=chartHeight + "px";
+
 }
 // creates chart depending on who you select
 async function generateChartUpdate(week, associateArrNumber, associateFullName){
