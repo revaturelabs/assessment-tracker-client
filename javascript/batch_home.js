@@ -1,8 +1,6 @@
 // highlights which page you are on in main nav
 let onHome = offPage;
 let onBatch = onPage;
-let onAssess = offPage;
-let onNotes = offPage;
 
 let state={};
 state.batchId = window.localStorage["batchId"];
@@ -1175,6 +1173,7 @@ let pendingCategories = new Map();
 let assessment_id;
 let category_id;
 let cur_category;
+
 /**
  * This is a legacy function. Checks if the form is valid, then posts both the assessment
  * and all the pending categories in the pendingCategories Map
@@ -1193,8 +1192,8 @@ async function checkValid(){
 
 /**
  * This function begins the POST request, creating an entity in the categories_junction table
- *@param {String} cat_name the category name to add
- *@param {String} cat_id the category id to add
+ * @param {String} cat_name the category name to add
+ * @param {String} cat_id the category id to add
  **/
 async function postCategory(cat_name, cat_id){
     let request_type = "POST";
@@ -1210,10 +1209,10 @@ async function postCategory(cat_name, cat_id){
 
 /**
  * This function clears the category fields on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
@@ -1251,10 +1250,10 @@ async function newCategory(){
 
 /**
  * This function clears the new category field on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
@@ -1287,10 +1286,10 @@ let categories;
 
 /**
  * This function clears the new category field on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function getCategories_Complete(status, response, response_loc, load_loc){
     if(status===200){
@@ -1330,10 +1329,10 @@ async function getCategoryByAssessment(assessId){
 
 /**
  * This function displays all the categories for an assessment when you click on the assessment.
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
     if(status===200){
@@ -1354,7 +1353,9 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
 }
 
 /**
- * This function checks if the select box has a value. If so
+ * This function checks if the select box has a value. If so, adds the category to the map of
+ * pending categories pendingCategories
+ * @returns This is used to escape the function
  **/
 function addCategory(){
     if(document.getElementById("category-select").value == null){//no option selected upon an add
@@ -1375,7 +1376,8 @@ function addCategory(){
 
 /**
  * This function checks if the category already exists. If not, adds to the pendingCategories Map
- *@param {Object} category the category to add to the Map
+ * @param {Object} category the category to add to the Map
+ * @returns This is used to escape the function
  **/
 function addCategoryList(category){
     if(pendingCategories.has(category.name)){//if category already in pending list
@@ -1389,7 +1391,7 @@ function addCategoryList(category){
 
 /**
  * This function removes a pending category from pendingCategories and refreshes the displays
- *@param {Object} category_name should be the category name.. Is currently actually the category object
+ * @param {Object} category_name should be the category name.. Is currently actually the category object
  **/
 function cancelCategory(category_name){
     
@@ -1416,8 +1418,8 @@ function displayCategories(){
 
 /**
  * This function toggles the alert in batch_home.html 
- *@param {boolean} isSuccessful flag to indicate if success or not
- *@param {string} message the message you want to display on the alert
+ * @param {boolean} isSuccessful flag to indicate if success or not
+ * @param {string} message the message you want to display on the alert
  **/
 const toggleAlert = function(isSuccessful, message){
     const alert = document.getElementById('batch_home_alerts');
