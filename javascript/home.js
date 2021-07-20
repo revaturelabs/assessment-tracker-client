@@ -22,7 +22,7 @@ async function loadBatchesbyYear(trainerId) {
     let load_loc = "batchLoader";
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 /**
@@ -63,7 +63,7 @@ async function branchData(trainerId, year, response_loc) {
     let load_loc = "batchLoader";
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 /**

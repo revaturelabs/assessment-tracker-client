@@ -7,7 +7,7 @@ const submit = document.getElementById("submitBatch");
 const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
 const bucketPath = "http://adam-ranieri-batch-1019.s3.amazonaws.com";
 //const pythonPath = "http://localhost:5000";
-//const bucketPath = "http://localhost:5500";
+//const bucketPath = "http://localhost:5500"; 
 
 const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
