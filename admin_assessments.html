@@ -27,7 +27,7 @@
             </a>
             <a class="navbar-brand order-xs-1 order-sm-1 order-md-1 order-lg-1 order-md-1 col col-6 col-sm-4 col-md-3 col-lg-2" href="home.html"><img src="images/rev-logo.png" alt="Revature Logo"></a>
             <div class="order-xs-3 order-sm-3 order-md-2 order-lg-3 order-md-3 mr-3 col col-3 col-sm-2">
-                <a id="loginBtn" data-toggle="modal" data-target="#logoutnModal" data-preLoad="Some content to pre-load" class="nav-link d-flex text-dark bg-info align-items-center">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></a>
+                <a id="loginBtn" data-toggle="modal" data-target="#logoutnModal" data-preLoad="Some content to pre-load" class="nav-link d-flex text-dark bg-info align-items-center" onclick="wipeStorage();logout();">Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i></a>
             </div>
         </nav>
     </header>
@@ -49,23 +49,24 @@
                 </h3>
                 <hr class="bg-lighter">
 
+                <!-- these tech stacks section is just for testing. There are more tech stacks in the database that should be added -->
                 <div id="techStacks" class = "d-flex flex-wrap justify-content-around mb-3">
-                    <div id="pythonStack" class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
+                    <div class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
                         <h4 class="card-title">Python</h4>
                         <hr class="bg-light">
-                        <table class="table table-dark table-hover">
+                        <table class="table table-striped table-dark table-hover">
                             <thead>
                                 <tr>
                                     <th id="assessmentName">Asssessment</th>
                                     <th id="assessmentAverages">Average</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="PythonStack">
 
                             </tbody>
                         </table>
                     </div>
-                    <div id="javaStack" class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
+                    <div class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
                         <h4 class="card-title">Java</h4>
                         <hr class="bg-light">
                         <table class="table table-dark table-hover">
@@ -75,13 +76,13 @@
                                     <th id="assessmentAverages">Average</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="JavaStack">
 
                             </tbody>
                         </table>
                     </div>
 
-                    <div id="testingStack" class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
+                    <div class="d-flex-inline-block flex-fill p-4 mr-2 bg-darker border border-dark">
                         <h4 class="card-title">Testing</h4>
                         <hr class="bg-light">
                         <table class="table table-dark table-hover">
@@ -91,7 +92,7 @@
                                     <th id="assessmentAverages">Average</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="TestStack">
 
                             </tbody>
                         </table>
