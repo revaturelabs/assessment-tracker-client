@@ -159,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week});generateChart(${week});">
+            onclick="updateTableGrades(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -290,7 +290,7 @@ function flipArrow(){
         chartBox.style.maxHeight = null;
         isBoxOpen = false;
     } else {
-        chartBox.style.maxHeight = chartBox.scrollHeight + 200 + "px";
+        chartBox.style.maxHeight = chartBox.scrollHeight + 500 + "px";
         isBoxOpen = true;
 
     }
@@ -307,15 +307,17 @@ async function generateChart(week){
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
+
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
     letchartAssociatesListFill = "<ul>";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartAssociateUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
     letchartAssociatesListFill += "</ul>";
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
+
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
@@ -329,8 +331,8 @@ async function generateChart(week){
         labels: assessmentsArrNames,
         datasets: [{
             label: 'Class Average',
-            backgroundColor: 'rgb(255, 99, 132)', 
-            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
             data: averageArrGrades,
         }]
     };
@@ -349,8 +351,8 @@ async function generateChart(week){
     chartAssociatesList.style.maxHeight=chartHeight + "px";
 
 }
-// creates chart depending on who you select
-async function generateChartUpdate(week, associateArrNumber, associateFullName){
+// Updates chart depending on who you select from the Associate list
+async function generateChartAssociateUpdate(week, associateArrNumber, associateFullName){
     let associatesArrGrades = [];
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
     //Sees if you have checked or unchecked
@@ -372,6 +374,29 @@ async function generateChartUpdate(week, associateArrNumber, associateFullName){
 
     gradeChart.update();
 }
+//
+function generateUpdatedChart(week){
+    let assessmentsArrNames = [];
+    let averageArrGrades = [];
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        averageArrGrades.push(avg)
+    }
+    gradeChart.data = {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
+            data: averageArrGrades,
+        }]};
+    gradeChart.update();
+}
+
+
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
 //The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
@@ -585,6 +610,7 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
     }else if(status >= 500){
         toggleAlert(false, "Internal service error.");
     }
+    generateUpdatedChart(curWeek);
 }
 
 //Get all Current Assessments for a Week
@@ -803,6 +829,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
         generateChart(curWeek);
+        generateUpdatedChart(curWeek);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
