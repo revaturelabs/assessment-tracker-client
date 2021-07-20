@@ -159,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week});generateChart(${week});">
+            onclick="updateTableGrades(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -169,9 +169,17 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
-    <div>
-        <canvas id="gradeChart"></canvas>
-        <div id="chartAssociatesList"></button></div>
+    <div class="plusBox" onclick="flipArrow()">
+        <h5 id="chartBoxHead">Click here to see a chart of the grades</h5>
+        <div class="plus__btn">
+            <span id="plus" class="plus"></span>
+        </div>
+    </div>
+    <div id="chartBox" class="chartBox inactive">
+        <div class="gradeChart">
+            <canvas id="gradeChart"></canvas>
+        </div>
+        <div class="chartAssociatesList" id="chartAssociatesList"></div>
     </div>  
     <table class="table table-dark table-striped table-hover">
         <thead>
@@ -227,8 +235,8 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
-        if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${parseFloat(avg, 10).toFixed(2)}</td>`;
+        if(avgInfo) avg = parseFloat(avgInfo.average, 10).toFixed(2);
+        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -270,23 +278,46 @@ function generateColors(){
         associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
     }
 }
-// creates default chart and associates list on load
+//hides and unhides the chart by making its heigh 0 or not
+// Class inactive makes it so that it starts at a max-height: 0
+//isBoxOpen traacks if the chart should be open when the new week is made
+isBoxOpen = false;
+function flipArrow(){
+    const chartBox = document.getElementById('chartBox');
+    const plus = document.getElementById('plus');
+    plus.classList.toggle("plus--acitve")
+    if (chartBox.style.maxHeight){
+        chartBox.style.maxHeight = null;
+        isBoxOpen = false;
+    } else {
+        chartBox.style.maxHeight = chartBox.scrollHeight + 500 + "px";
+        isBoxOpen = true;
+
+    }
+}
+// creates base chart and associates list on load
 async function generateChart(week){
     if(associateChartColor.length != associates.length){
         generateColors();
+    }
+    if(isBoxOpen === true){
+        flipArrow();
     }
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
+
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
-    letchartAssociatesListFill = "";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">${associateArr[0]}</label>`)
+    letchartAssociatesListFill = "<ul>";
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartAssociateUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
+    letchartAssociatesListFill += "</ul>";
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
+
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
@@ -300,8 +331,8 @@ async function generateChart(week){
         labels: assessmentsArrNames,
         datasets: [{
             label: 'Class Average',
-            backgroundColor: 'rgb(255, 99, 132)', 
-            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
             data: averageArrGrades,
         }]
     };
@@ -314,9 +345,14 @@ async function generateChart(week){
         document.getElementById('gradeChart'),
         config
     );
+    //Set the max height of the associates list to the height of the chart so that the list does not over flow
+    let box = document.getElementById('gradeChart');
+    let chartHeight = box.offsetHeight;
+    chartAssociatesList.style.maxHeight=chartHeight + "px";
+
 }
-// creates chart depending on who you select
-async function generateChartUpdate(week, associateArrNumber, associateFullName){
+// Updates chart depending on who you select from the Associate list
+async function generateChartAssociateUpdate(week, associateArrNumber, associateFullName){
     let associatesArrGrades = [];
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
     //Sees if you have checked or unchecked
@@ -338,6 +374,29 @@ async function generateChartUpdate(week, associateArrNumber, associateFullName){
 
     gradeChart.update();
 }
+//
+function generateUpdatedChart(week){
+    let assessmentsArrNames = [];
+    let averageArrGrades = [];
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        averageArrGrades.push(avg)
+    }
+    gradeChart.data = {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
+            data: averageArrGrades,
+        }]};
+    gradeChart.update();
+}
+
+
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
 //The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
@@ -551,6 +610,7 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
     }else if(status >= 500){
         toggleAlert(false, "Internal service error.");
     }
+    generateUpdatedChart(curWeek);
 }
 
 //Get all Current Assessments for a Week
@@ -769,6 +829,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
         generateChart(curWeek);
+        generateUpdatedChart(curWeek);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
