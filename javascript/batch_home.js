@@ -317,7 +317,6 @@ function generateColors(){
  * @returns {Number[]} an array number base 10 representation of color in RGB
  **/
  const hexStringToRgbArray = function (hexColorStr){
-     console.log(hexColorStr)
     if(hexColorStr.length !== 7 && hexColorStr.length != 4) 
         throw Error('Invalid input, hexColorStr must be of the form "#fff", "#ffffff" or "#f4f4f4"');
     let rgbArray = [];
@@ -570,7 +569,6 @@ function displayAssessments(assessments){
         " id="assessment_${assessment.assessmentId}" data-toggle="modal" href="#adjustWeightModal">${assessment.assessmentTitle}</a>
         </li>`;
     });
-    console.log(batch);
     return display
 }
 // holds the styling for the batches
@@ -652,7 +650,6 @@ async function updateTableGrades(week) {
     dropdownDOM.disabled = false;
 }
 function updateTableGradesComplete(status, response, response_loc, load_loc) {
-    console.log(status);
     if(status === 200 || status === 201) {
         const updatedGrade = JSON.parse(response);
         let i = associateIDToTableRow[curWeek].get(updatedGrade.associateId);
@@ -672,7 +669,6 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
         let avgInfo = assessmentIDToAverageCache[curWeek].get(updatedGrade.assessmentId);
         let curTotal = avgInfo.average * avgInfo.numScores;
         let curAssociateTotal = Number(totalDataDOM.innerHTML);
-        console.log(avgInfo, curTotal);
         curTotal += updatedGrade.score;
         curAssociateTotal += updatedGrade.score;
         if(gradeCache[curWeek][i][j] === "*") {
@@ -684,7 +680,6 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
             curAssociateTotal += gradeCache[curWeek][i][j];
             avgInfo.average = curTotal / avgInfo.numScores;
         }
-        console.log(avgInfo, curTotal);
         avgDataDOM.innerHTML = parseFloat(avgInfo.average, 10).toFixed(2);
         totalDataDOM.innerHTML = curAssociateTotal;
         //update cache
@@ -712,7 +707,6 @@ async function getAssessments(weekId) {
     //base_url(python)
     //java_base_url(java)
     let url = java_base_url + endpoint;
-    console.log(url)
     //request_type: type of request
     let request_type = "GET";
     //location you want the response to load
@@ -739,15 +733,11 @@ function getAssessments_complete(status, response, response_loc, load_loc) {
     //action if code 200
     if (status == 200) {
         let res = JSON.parse(response)
-        console.log(res);
         //load the response into the response_loc
         if(Object.keys(res).length <= 0) {
             document.getElementById(response_loc).innerHTML = "-No Assessments Yet-";
         } else {
-            console.log(res);
             document.getElementById(response_loc).innerHTML = displayAssessments(res);
-            console.log("batch");
-            console.log(batch);
         }
 
         //action if code 201
@@ -855,7 +845,6 @@ async function createAssessment() {
     //endpoint: rest api endpoint
     let endpoint = "assessments"
     let url = java_base_url + endpoint;
-    console.log(url)
     let request_type = "POST";
     //location you want the response to load
     let thisWeekId = document.getElementById("assessment-week").innerHTML
@@ -887,9 +876,6 @@ async function createAssessment() {
         categoryId: 2
     }
     let jsonData = thisAssessment;
-    console.log(thisAssessment);
-    console.log(thisWeekId);
-
     await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
@@ -967,8 +953,6 @@ function updateWeight_complete(status, response, response_loc, load_loc) {
     //action if code 200
     if (status == 200) {
         let res = JSON.parse(response);
-        console.log("batch");
-        console.log(batch);
 
         //action if code 201
     } else if (status == 201) {
@@ -1358,8 +1342,6 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 
             }
         }
-    }else{
-        console.log("Failed to retrieve categories.");
     }
 }
 
@@ -1398,8 +1380,6 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
         } else {
             document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
         }
-    }else{
-        console.log("Failed to retrieve category information for this assessment.");
     }
 }
 

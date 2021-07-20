@@ -210,14 +210,13 @@ async function createBatch() {
 	// get the ids from the select tag
 	const trainerOption = trainerInput.options[trainerInput.selectedIndex];
 	const cotrainerOption = coTrainerInput.options[coTrainerInput.selectedIndex];
-	console.log(cotrainerOption);
 	const trainerId = Number(trainerOption.getAttribute("name"));
 	let cotrainerId = null;
 
 	// checks if there is a cotrainer
-	if(cotrainerOption.innerText !== "--Select a Cotrainer--")
+	if(cotrainerOption.innerText !== "--Select a Cotrainer--") {
 		cotrainerId = Number(cotrainerOption.getAttribute("name"));
-	console.log(cotrainerId);
+	}
 
 	//boolean variables to see if associates and trainers are properly registered
 	let associateStatus = false;

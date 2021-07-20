@@ -33,7 +33,6 @@ async function loadBatchesbyYear(trainerId) {
  * @param {String} load_loc the load location
  **/
 function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
-    console.log(response);
     let jsonHolder = JSON.parse(response);
     document.getElementById(response_loc).innerHTML = "";
     if(status == 200) {
@@ -47,8 +46,6 @@ function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
     } else if(status == 400) {
         document.getElementById(response_loc).innerHTML = response;
     }
-    console.log("jsonHolder");
-    console.log(jsonHolder);
 }
 
 /**
@@ -92,8 +89,6 @@ function branchData_complete(status, response, response_loc, load_loc) {
     } else if(status == 400) {
         document.getElementById(response_loc).innerHTML = response;
     }
-    console.log("batches");
-    console.log(batches);
 }
 
 /**

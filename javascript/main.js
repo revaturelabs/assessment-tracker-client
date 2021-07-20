@@ -196,7 +196,6 @@ function searchBatches_complete(status, response, responseLocation) {
     //action if code 200
     if(status == 200) {
         let parsedResponse = JSON.parse(response);
-        console.log(parsedResponse);
         if(Object.keys(parsedResponse).length <= 0) {
             document.getElementById(responseLocation).innerHTML = `<div class="d-block m-1 bg-lighter rounded"><p class="d-block text-center text-black p-3 bg-lighter rounded">- No Batches with this name exist! -</p></div>`;
         } else {
@@ -329,7 +328,6 @@ function getObjectFromObject(formObject,outputObject) {
             }
         });
     });
-    console.log(outputObject);
     return outputObject;
 }
 
