@@ -196,7 +196,7 @@ function generateTable(week){
         batch.currentID = ${assessmentsArr[week][i].assessmentId};
         batch.currentCategory = ${assessmentsArr[week][i].categoryId};
         batch.currentType = ${assessmentsArr[week][i].typeId};
-        updateAssessInfo(batch.currentType, batch.currentCategory);
+        updateAssessInfo(batch.currentType);
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
@@ -397,10 +397,11 @@ function generateUpdatedChart(week){
 }
 
 
-//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
+//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and default weight the assessment is.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
-//The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
-async function updateAssessInfo(typeId, catId) {
+//Default weight also changes depending on the assessment's type.
+//Another function called getCategoryByAssessment changes the Category line.
+function updateAssessInfo(typeId) {
     let typeName = "";
     let typeNum = 0;
 
@@ -423,30 +424,10 @@ async function updateAssessInfo(typeId, catId) {
             break;
     }
 
-    let response_func = getCategoryNameComplete;
-    let endpoint =  `categories/${catId}`;
-    let url = java_base_url + endpoint;
-    let request_type = "GET";
-    let response_loc = false;
-    let load_loc = false;
-    let jsonData = false;
-
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
     document.getElementById('assessWeightText').innerText = "Default weight is "+String(typeNum);
 }
 
-function getCategoryNameComplete(status, response, response_loc, load_loc) {
-    if(status==200){
-        //console.log("Success");
-        let catName = JSON.parse(response);
-        //console.log(catName.name);
-        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName.name;
-    }else{
-        console.log("Potential Failure");
-        console.log(JSON.parse(response));
-    }
-}
 
 async function addWeek(totalWeeks) {
     let holder = "";
@@ -1230,10 +1211,12 @@ function getCategories_Complete(status, response, response_loc, load_loc){
             }
         }
     }else{
-        console.log("Potential Failure");
+        console.log("Failed to retrieve categories.");
     }
 }
 
+
+//Retrieves all categories that an assessment is assigned to and displays them when you click on an assessment.
 async function getCategoryByAssessment(assessId){
     let response_func = getCategoryByAssessment_Complete;
     let endpoint =  `assessments/${assessId}/categories`;
@@ -1254,9 +1237,13 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
             category = categories[i];
             catText += category.name+", ";
         }
-        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
+        if (catText === ""){
+            document.getElementById('assessCategoryText').innerText = "Assessment Category: None";
+        } else {
+            document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
+        }
     }else{
-        console.log("Potential Failure");
+        console.log("Failed to retrieve category information for this assessment.");
     }
 }
 
