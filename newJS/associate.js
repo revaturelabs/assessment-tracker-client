@@ -29,6 +29,7 @@ function newBatch(batch) {
     </div>`;
 }
 
+//This HTML page doesn't exist and I don't think I'll have time to finish it today
 function goToAssociateAssessmentPage(batchId) {
     window.location.href = `associate_assessments.html?batch=${batchId}`;
 }
