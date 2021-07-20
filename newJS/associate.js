@@ -11,7 +11,7 @@ async function pageDataToLoad() {
 /**
  * Loads information on every batch an associate is registered for
  * TODO: Implement the endpoint /associates/<associateId>/batches to get all batches for which an associate is registered
- * @param {The ID of the associate to load information for} associateId 
+ * @param {Number} associateId The ID of the associate to load information for 
  */
 async function loadBatches(associateId) {
     //This endpoint currently doesn't exist in the backend.  Needs to be implemented for this function to work
@@ -30,7 +30,7 @@ async function loadBatches(associateId) {
 
 /**
  * Generates a card with information that redirects to another webpage on click
- * @param {The batch to generate a card for} batch 
+ * @param {Object} batch The batch to generate a card for
  * @returns A styled, clickable card in the form of a div 
  */
 function newBatch(batch) {
@@ -44,7 +44,7 @@ function newBatch(batch) {
 /**
  * Redirects to a page that displays an associates results for a specific batches assessments
  * TODO: Create the associate_assessments.html file.  Currently, this redirects to nothing
- * @param {The ID of the batch to redirect to} batchId 
+ * @param {Number} batchId The ID of the batch to redirect to
  */
 function goToAssociateAssessmentPage(batchId) {
     window.location.href = `associate_assessments.html?batch=${batchId}`;
