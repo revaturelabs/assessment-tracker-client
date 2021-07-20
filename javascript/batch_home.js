@@ -1175,6 +1175,10 @@ let pendingCategories = new Map();
 let assessment_id;
 let category_id;
 let cur_category;
+/**
+ * This is a legacy function. Checks if the form is valid, then posts both the assessment
+ * and all the pending categories in the pendingCategories Map
+ **/
 async function checkValid(){
     let form = document.getElementById("createAssessmentForm");
     if (form.checkValidity() === true) {
@@ -1187,6 +1191,11 @@ async function checkValid(){
     displayCategories();
 }
 
+/**
+ * This function begins the POST request, creating an entity in the categories_junction table
+ *@param {String} cat_name the category name to add
+ *@param {String} cat_id the category id to add
+ **/
 async function postCategory(cat_name, cat_id){
     let request_type = "POST";
     arr = assessmentsArr[curWeek].length-1;
@@ -1199,6 +1208,13 @@ async function postCategory(cat_name, cat_id){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function clears the category fields on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         toggleAlert(true, "Category successfully created.");
@@ -1210,12 +1226,18 @@ function postCategory_Complete(status, response, response_loc, load_loc){
     }
 }
 
+/**
+ * This function clears the category fields on the form
+ **/
 function clearFields(){
     document.getElementById("assessment-title").value = "";
     pendingCategories.clear();
     displayCategories();
 }
 
+/**
+ * This function begins the POST request to create a new category
+ **/
 async function newCategory(){
     let request_type = "POST";
     let endpoint = `categories`;
@@ -1227,6 +1249,13 @@ async function newCategory(){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function clears the new category field on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         document.getElementById("new-category").value = "";
@@ -1237,6 +1266,9 @@ function newCategory_Complete(status, response, response_loc, load_loc){
     }
 }
 
+/**
+ * This function begins the GET request to get all possible categories
+ **/
 async function getCategories() {
     let response_func = getCategories_Complete;
     let endpoint =  `categories`;
@@ -1250,7 +1282,16 @@ async function getCategories() {
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+//stores all possible categories to an array
 let categories;
+
+/**
+ * This function clears the new category field on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function getCategories_Complete(status, response, response_loc, load_loc){
     if(status===200){
         categories = JSON.parse(response);
@@ -1263,7 +1304,6 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 option.id = category.name;
                 option.value = category.name;
                 option.innerHTML = category.name;
-                // option.onclick = addCategoryList(category);
                 select.appendChild(option);
                 
             }
@@ -1273,8 +1313,9 @@ function getCategories_Complete(status, response, response_loc, load_loc){
     }
 }
 
-
-//Retrieves all categories that an assessment is assigned to and displays them when you click on an assessment.
+/**
+ * This function begins the GET request to get all categories for an assessment
+ **/
 async function getCategoryByAssessment(assessId){
     let response_func = getCategoryByAssessment_Complete;
     let endpoint =  `assessments/${assessId}/categories`;
@@ -1287,6 +1328,13 @@ async function getCategoryByAssessment(assessId){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function displays all the categories for an assessment when you click on the assessment.
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
     if(status===200){
         categories = JSON.parse(response);
@@ -1305,7 +1353,10 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
     }
 }
 
-async function addCategory(){
+/**
+ * This function checks if the select box has a value. If so
+ **/
+function addCategory(){
     if(document.getElementById("category-select").value == null){//no option selected upon an add
         toggleAlert(false, "Please select a category.");
         return;
@@ -1315,13 +1366,17 @@ async function addCategory(){
     for(let i=0;i<categories.length;i++){
         category = categories[i];
         if(category.name == value){
-            addCategoryList(category);//add to list, will POST all upon clicking submit button
+            addCategoryList(category);//add to list, will POST all later upon clicking submit button
             document.getElementById("category-select").selectedIndex = -1;
         }
     }
     displayCategories();
 }
 
+/**
+ * This function checks if the category already exists. If not, adds to the pendingCategories Map
+ *@param {Object} category the category to add to the Map
+ **/
 function addCategoryList(category){
     if(pendingCategories.has(category.name)){//if category already in pending list
         toggleAlert(false, "Category already added.");
@@ -1332,12 +1387,20 @@ function addCategoryList(category){
     }
 }
 
+/**
+ * This function removes a pending category from pendingCategories and refreshes the displays
+ *@param {Object} category_name should be the category name.. Is currently actually the category object
+ **/
 function cancelCategory(category_name){
     
     pendingCategories.delete(category_name.id);
     displayCategories();
 }
 
+/**
+ * This function refreshes the display of categories upon
+ * creating a new assessment. This will reflect the pendingCategories Map variable
+ **/
 function displayCategories(){
     let li = document.getElementById("category-list");
     li.innerHTML = ``;
