@@ -1,8 +1,6 @@
 // highlights which page you are on in main nav 
 let onHome = offPage;
 let onBatch = onPage;
-let onAssess = offPage;
-let onNotes = offPage;
 
 let state={};
 state.batchId = window.localStorage["batchId"];
@@ -169,7 +167,7 @@ function generateTable(week){
         return;
     }
     let tableInnards = `
-    <div class="plusBox" onclick="flipArrow()">
+    <div class="plusBox" onclick="flipPlus()">
         <h5 id="chartBoxHead">Click here to see a chart of the grades</h5>
         <div class="plus__btn">
             <span id="plus" class="plus"></span>
@@ -271,16 +269,24 @@ function generateTable(week){
     }
 }
 
+
+/*----------------------- Random color generation for chart starts -----------------------*/
 //creates colors for every associate when the page loads
 associateChartColor = [];
+/**
+ * Function that creates an array of colors. Every associate has a color generated 
+ * for them. The function is meant to load when page is created and not again. This
+ * is to ensure all chart lines have unique colors that stay consistence for the page.
+**/
 function generateColors(){
     for(let i = 0; i < associates.length; ++i){
         associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
         //sometimes generates with one less character then need. Checks and adds to make sure it is a usable color
         if(associateChartColor[i].length === 6){associateChartColor[i] = associateChartColor[i].concat("0");}
+        //Ensures colors are difrent from background and averge. Also makes sure hex value can be converted.
         if(associateChartColor[i].length === 7){
-            if(isColorTooSimilar([29, 30, 34],associateChartColor[i],100) === true){associateChartColor.pop();--i;}
-            if(associateChartColor[i]!= undefined && isColorTooSimilar([70, 148, 196],associateChartColor[i],100) === true){associateChartColor.pop();--i;}
+            if(isColorTooSimilar([29, 30, 34],associateChartColor[i],50) === true){associateChartColor.pop();--i;}
+            if(associateChartColor[i]!= undefined && isColorTooSimilar([70, 148, 196],associateChartColor[i],80) === true){associateChartColor.pop();--i;}
         }else{associateChartColor.pop();--i;}
     }
 }
@@ -288,11 +294,11 @@ function generateColors(){
  * Function that returns true if the sampleColor is closer to the backgroun
  * color than the given threshold, otherwise false. This function can be used to
  * determine if the input color is too similar to the background color
- *@param {Number[]} sampleColor array representation of rgb values of sample color 
- *@param {Number[]} backgroundColor array representation of rgb values of bg color
- *@param {Number} thresholdDistance maximum distance sample color can be to background color
- *@throws Error if thresholdDistance < 0
- *@returns {boolean} true if color is outside threshold, false otherwise
+ * @param {Number[]} sampleColor array representation of rgb values of sample color 
+ * @param {Number[]} backgroundColor array representation of rgb values of bg color
+ * @param {Number} thresholdDistance maximum distance sample color can be to background color
+ * @throws Error if thresholdDistance < 0
+ * @returns {boolean} true if color is outside threshold, false otherwise
  **/
  const isColorTooSimilar = function(backgroundColor, sampleColorHex, thresholdDistance){
     sampleColor=hexStringToRgbArray(sampleColorHex)
@@ -306,9 +312,9 @@ function generateColors(){
 /**Function that converts a string representation of RGB into an array 
  * integer representation of RGB in base 10. Example: '#ffffff' => [255,255,255]
  * or '#fff' => [255, 255, 255]
- *@param {string} hexColorStr a string in HEX representation of RGB
- *@throws {error} if string not formatted correctly or hex value out of range
- *@returns {Number[]} an array number base 10 representation of color in RGB
+ * @param {string} hexColorStr a string in HEX representation of RGB
+ * @throws {error} if string not formatted correctly or hex value out of range
+ * @returns {Number[]} an array number base 10 representation of color in RGB
  **/
  const hexStringToRgbArray = function (hexColorStr){
      console.log(hexColorStr)
@@ -333,11 +339,19 @@ function generateColors(){
     }
     return rgbArray;
 };
-//hides and unhides the chart by making its heigh 0 or not
-// Class inactive makes it so that it starts at a max-height: 0
-//isBoxOpen traacks if the chart should be open when the new week is made
+/*----------------------- Random color generation for chart ends -----------------------*/
+
+
+/*----------------------- Chart creation and controls starts -----------------------*/
+
+//isBoxOpen tracks if the chart should be open when a new week is generated
 isBoxOpen = false;
-function flipArrow(){
+/**
+ * Function that controls if the chart can be seen and how the plus should look.
+ * Hides and unhides the chart by making its heigh 0 or not.
+ * Class inactive makes it so that it starts at a max-height: 0.
+**/
+function flipPlus(){
     const chartBox = document.getElementById('chartBox');
     const plus = document.getElementById('plus');
     plus.classList.toggle("plus--acitve")
@@ -350,18 +364,30 @@ function flipArrow(){
 
     }
 }
-// creates base chart and associates list on load
-async function generateChart(week){
-    if(associateChartColor.length != associates.length){
-        generateColors();
-    }
-    if(isBoxOpen === true){
-        flipArrow();
-    }
+
+
+/**
+ * Function that constructs the chart for each week and constructs the associates list 
+ * while setting the max height of the list to the height of the chart.
+ * Calls the generateColors array constructor if colors are needed for the chart and
+ * checks if flipPlus needs to be called to make the chart visible when creating a new 
+ * week’s chart. 
+ * Made using https://www.chartjs.org/.
+ * @param {Number} week The week that needs to be represented.
+ **/
+function generateChart(week){
     let associateArrNumberandName =[];
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
+
+    //Checks if any other functions need to be called
+    if(associateChartColor.length != associates.length){
+        generateColors();
+    }
+    if(isBoxOpen === true){
+        flipPlus();
+    }
 
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
@@ -385,7 +411,7 @@ async function generateChart(week){
     let data = {
         labels: assessmentsArrNames,
         datasets: [{
-            label: 'Class Average',
+            label: 'Batch Average',
             backgroundColor: '#4694c4', 
             borderColor: '#4694c4',
             data: averageArrGrades,
@@ -400,17 +426,30 @@ async function generateChart(week){
         document.getElementById('gradeChart'),
         config
     );
+
     //Set the max height of the associates list to the height of the chart so that the list does not over flow
     let box = document.getElementById('gradeChart');
     let chartHeight = box.offsetHeight;
     chartAssociatesList.style.maxHeight=chartHeight + "px";
 
 }
-// Updates chart depending on who you select from the Associate list
-async function generateChartAssociateUpdate(week, associateArrNumber, associateFullName){
+
+/**
+ * Function that inputs or removes data from the gradeChart. Used for injecting associate's
+ * information depending on what checkbox was clicked and if it is true or false on the page.
+ * If the check box is true, add data to the gradeChart chart. 
+ * If the check box is false, remove data with the same name as the check box. 
+ * Made using https://www.chartjs.org/.
+ * @param {Number} week The week that needs to be represented.
+ * @param {Number} associateArrNumber The index in the associate array they are at. "Generated" when checkboxses are created in generateChart().
+ * @param {String} associateFullName The full name of the associate that is being added or removed from the chart.
+ **/
+function generateChartAssociateUpdate(week, associateArrNumber, associateFullName){
+    // get grades of associate
     let associatesArrGrades = [];
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
-    //Sees if you have checked or unchecked
+
+    //Sees if the box was checked or unchecked and respond accordingly  
     const checkbox = document.getElementById(`checkbox${associateArrNumber}`).checked;
     if(checkbox === true){
         const newData = {
@@ -426,14 +465,19 @@ async function generateChartAssociateUpdate(week, associateArrNumber, associateF
             }
         }
     }
-
     gradeChart.update();
 }
 
-//Updates chart when grades and assesments are updated
+/**
+ * Function that updates the gradeChart chart with new grade averages and new assessments.
+ * Once the update is pushed unchecks all associates. 
+ * Made using https://www.chartjs.org/.
+ *@param {Number} week The week that needs to be represented.
+ **/ 
 function generateUpdatedChart(week){
     let assessmentsArrNames = [];
     let averageArrGrades = [];
+    // Get updated data
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         let avg = "-";
@@ -444,15 +488,20 @@ function generateUpdatedChart(week){
     gradeChart.data = {
         labels: assessmentsArrNames,
         datasets: [{
-            label: 'Class Average',
+            label: 'Batch Average',
             backgroundColor: '#4694c4', 
             borderColor: '#4694c4',
             data: averageArrGrades,
         }]};
+
+    //Commits updated data 
     gradeChart.update();
+
     //unchecks boxses for new chart
     for(let i = 0; i < associates.length; ++i){document.getElementById(`checkbox${i}`).checked = false;}
 }
+/*----------------------- Chart creation and controls end -----------------------*/
+
 
 
 //updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and default weight the assessment is.
@@ -1175,6 +1224,7 @@ let pendingCategories = new Map();
 let assessment_id;
 let category_id;
 let cur_category;
+
 /**
  * This is a legacy function. Checks if the form is valid, then posts both the assessment
  * and all the pending categories in the pendingCategories Map
@@ -1193,8 +1243,8 @@ async function checkValid(){
 
 /**
  * This function begins the POST request, creating an entity in the categories_junction table
- *@param {String} cat_name the category name to add
- *@param {String} cat_id the category id to add
+ * @param {String} cat_name the category name to add
+ * @param {String} cat_id the category id to add
  **/
 async function postCategory(cat_name, cat_id){
     let request_type = "POST";
@@ -1210,10 +1260,10 @@ async function postCategory(cat_name, cat_id){
 
 /**
  * This function clears the category fields on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
@@ -1251,10 +1301,10 @@ async function newCategory(){
 
 /**
  * This function clears the new category field on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
@@ -1287,10 +1337,10 @@ let categories;
 
 /**
  * This function clears the new category field on the form and sends an alert message
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function getCategories_Complete(status, response, response_loc, load_loc){
     if(status===200){
@@ -1330,10 +1380,10 @@ async function getCategoryByAssessment(assessId){
 
 /**
  * This function displays all the categories for an assessment when you click on the assessment.
- *@param {String} status the status code response
- *@param {String} response the response message
- *@param {String} response_loc the response location
- *@param {String} load_loc the load location
+ * @param {String} status the status code response
+ * @param {String} response the response message
+ * @param {String} response_loc the response location
+ * @param {String} load_loc the load location
  **/
 function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
     if(status===200){
@@ -1354,7 +1404,9 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
 }
 
 /**
- * This function checks if the select box has a value. If so
+ * This function checks if the select box has a value. If so, adds the category to the map of
+ * pending categories pendingCategories
+ * @returns This is used to escape the function
  **/
 function addCategory(){
     if(document.getElementById("category-select").value == null){//no option selected upon an add
@@ -1375,7 +1427,8 @@ function addCategory(){
 
 /**
  * This function checks if the category already exists. If not, adds to the pendingCategories Map
- *@param {Object} category the category to add to the Map
+ * @param {Object} category the category to add to the Map
+ * @returns This is used to escape the function
  **/
 function addCategoryList(category){
     if(pendingCategories.has(category.name)){//if category already in pending list
@@ -1389,7 +1442,7 @@ function addCategoryList(category){
 
 /**
  * This function removes a pending category from pendingCategories and refreshes the displays
- *@param {Object} category_name should be the category name.. Is currently actually the category object
+ * @param {Object} category_name should be the category name.. Is currently actually the category object
  **/
 function cancelCategory(category_name){
     
@@ -1416,8 +1469,8 @@ function displayCategories(){
 
 /**
  * This function toggles the alert in batch_home.html 
- *@param {boolean} isSuccessful flag to indicate if success or not
- *@param {string} message the message you want to display on the alert
+ * @param {boolean} isSuccessful flag to indicate if success or not
+ * @param {string} message the message you want to display on the alert
  **/
 const toggleAlert = function(isSuccessful, message){
     const alert = document.getElementById('batch_home_alerts');
