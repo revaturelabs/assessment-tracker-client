@@ -13,6 +13,10 @@ const associateEmailInput = document.getElementById("emailInput");
 const associateFirstNameInput = document.getElementById("firstNameInput");
 const associateLastNameInput = document.getElementById("lastNameInput");
 
+
+/** Function that creates a new associate, 
+ * and adds it to the unadded associates list
+ */
 async function createNewAssociate() {
 	associateEmailInput.classList.remove("is-invalid");
 	associateFirstNameInput.classList.remove("is-invalid");
@@ -61,7 +65,15 @@ async function createNewAssociate() {
 		return false;
 	}
 }
-
+/** Function that validates input using regex.
+ * Checks that email is valid format blank@blank.blank
+ * Checks that first name and last name are purely alphabetical
+ * 
+ * @param {String} email 
+ * @param {String} firstName 
+ * @param {String} lastName 
+ * @returns {boolean} true if valid input, false if invalid input
+ */
 function isInputValid(email, firstName, lastName) {
 	let valid = true;
 	if (
@@ -83,6 +95,19 @@ function isInputValid(email, firstName, lastName) {
 	return valid;
 }
 
+/** Cheks that name and track are strings containing only the alphabet, numbers,
+ * and some special characters
+ * Checks that trainer and cotrainer are not the same
+ * Checks that start date is before endate
+ * 
+ * @param {String} name 
+ * @param {String} track 
+ * @param {String} trainer 
+ * @param {String} cotrainer 
+ * @param {Date} startDate 
+ * @param {Date} endDate 
+ * @returns {boolean} true if valid input, false if invalid input
+ */
 function validateBatchInfo(name, track, trainer, cotrainer, startDate, endDate){
 	
 	if(name === "" | track==="" | trainer === "" | endDate === ""){
@@ -101,6 +126,10 @@ function validateBatchInfo(name, track, trainer, cotrainer, startDate, endDate){
 	return true;
 }
 
+/** This function populates the select field for trainers and cotrainers
+ * from the database.
+ * 
+ */
 async function getAllTrainers(){
 	const config = {
 		method: "GET"
@@ -117,6 +146,10 @@ async function getAllTrainers(){
 	}
 }
 
+/** This function populates the unadded associates list with associates from
+ * the database.
+ * 
+ */
 async function getAllAssociates() {
 	const config = {
 		method: "GET",
@@ -128,6 +161,12 @@ async function getAllAssociates() {
 	}
 }
 
+
+/** This function specifies what to do when a checkbox is clicked. 
+ * Namely it switches the list element between the two unordered lists
+ * 
+ * @param {HTMLElement} listItem The list that the checkbox resides in
+ */
 function clickAssociate(listItem) {
 	const parentList = listItem.parentElement;
 	if (parentList === addedAssoc) {
@@ -137,6 +176,11 @@ function clickAssociate(listItem) {
 	}
 }
 
+/** This function reduces the amount of displayed associates based on whether
+ * the associates first and last name contain
+ * the text in the search bar
+ * 
+ */
 function filterList() {
 	let input = search.value.toUpperCase();
 	const associates = unaddedAssoc.children;
@@ -150,6 +194,11 @@ function filterList() {
 	}
 }
 
+/** Creates a batch and calls registerAssociatesToBatch and 
+ * registerTrainerToBatch.
+ * 
+ * @returns {Alert} returns an alert if batch inputs are invalid
+ */
 async function createBatch() {
 	let nameInput = document.getElementById("nameInput").value;
 	let trackInput = document.getElementById("trackInput").value;
@@ -157,14 +206,20 @@ async function createBatch() {
 	const end = document.getElementById("endDate").value;
 	let startDate = new Date(start).getTime() / 1000;
 	let endDate = new Date(end).getTime() / 1000;
+
+	// get the ids from the select tag
 	const trainerOption = trainerInput.options[trainerInput.selectedIndex];
 	const cotrainerOption = coTrainerInput.options[coTrainerInput.selectedIndex];
 	console.log(cotrainerOption);
 	const trainerId = Number(trainerOption.getAttribute("name"));
 	let cotrainerId = null;
+
+	// checks if there is a cotrainer
 	if(cotrainerOption.innerText !== "--Select a Cotrainer--")
 		cotrainerId = Number(cotrainerOption.getAttribute("name"));
 	console.log(cotrainerId);
+
+	//boolean variables to see if associates and trainers are properly registered
 	let associateStatus = false;
 	let trainerStatus = false;
 
@@ -173,6 +228,7 @@ async function createBatch() {
 	if(!goAhead){
 		return alert("Problem with one or more fields");	
 	}
+
 	const req = {
 		name: nameInput,
 		trainingTrack: trackInput,
@@ -207,9 +263,12 @@ async function createBatch() {
 	}
 }
 
-	//associates is the array of all the list items
-
-
+/** Registers associates to a batch.
+ * It registers the associates in the added associates list
+ * 
+ * @param {Number} batchId The id number of the batch.
+ * @returns {boolean} true if all associates are added successfully, false otherwise
+ */
 async function registerAssociatesToBatch(batchId){
 	let valid = true;
 	const associates = addedAssoc.children;
@@ -237,6 +296,14 @@ async function registerAssociatesToBatch(batchId){
 	return valid;
 }
 
+/** Registers a trainer to a batch.
+ * 
+ * @param {Number} trainerId The unique ID of the trainer
+ * @param {Number} batchId  The unique ID of the batch
+ * @param {String} trainerRole The role a trainer will have for the batch. Usually
+ * lead or co-lead
+ * @returns {boolean} Returns true if the trainer was registered, false otherwise
+ */
 async function registerTrainerToBatch(trainerId, batchId, trainerRole){
 	const trainerReq = {
 		trainerId: trainerId,
@@ -259,21 +326,31 @@ async function registerTrainerToBatch(trainerId, batchId, trainerRole){
 
 }
 
+/**
+ * This function wipes session storage
+ **/
 function wipeStorage() {
     sessionStorage.clear();
 }
 
-// logout function
+/**
+ * This function logs the user out and returns them to the home page
+ **/
 function logout(){
 	document.location = bucketPath + "/home.html"
 }
 
-//sets startDate to today's date
+/**
+ * This function sets the startDate input field to todays date by default
+ */
 const setStartDate = () => {
 	const currDate = new Date().toDateInputValue();
 	document.getElementById("startDate").value = currDate;
 };
 
+/**
+ * This function sets the endDate input field to 2 weeks after the start date
+ */
 const setEndDate = () => {
 	const currDate = new Date().getTime();
 	const laterTime = currDate + 1209600000;
@@ -281,8 +358,10 @@ const setEndDate = () => {
 	document.getElementById("endDate").value = laterDate;
 }
 
-
-//Helper function to stripdown date to this format: "07-02-2021" for the frontend date selector
+/**
+ * Helper function to stripdown date to this format: "07-02-2021" for the frontend date selector
+ * @returns {Date}
+ */
 Date.prototype.toDateInputValue = function () {
 	var local = new Date(this);
 	local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
