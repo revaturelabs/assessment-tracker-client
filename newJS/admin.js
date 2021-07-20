@@ -1,7 +1,7 @@
-const unaddedAssoc = document.getElementById("unaddedAssociates");
-const addedAssoc = document.getElementById("addedAssociates");
-const trainerInput = document.getElementById("batchTrainer");
-const coTrainerInput = document.getElementById("batchCoTrainer");
+let unaddedAssoc = document.getElementById("unaddedAssociates");
+let addedAssoc = document.getElementById("addedAssociates");
+let trainerInput = document.getElementById("batchTrainer");
+let coTrainerInput = document.getElementById("batchCoTrainer");
 let search = document.getElementById("searchAssociate");
 const submit = document.getElementById("submitBatch");
 const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
@@ -85,7 +85,7 @@ function isInputValid(email, firstName, lastName) {
 
 function validateBatchInfo(name, track, trainer, cotrainer, startDate, endDate){
 	
-	if(name === "" | track==="" | trainer === "" | cotrainer === "" | endDate === ""){
+	if(name === "" | track==="" | trainer === "" | endDate === ""){
 		return false;
 	} 
 
@@ -151,17 +151,19 @@ function filterList() {
 }
 
 async function createBatch() {
-	const nameInput = document.getElementById("nameInput").value;
-	const trackInput = document.getElementById("trackInput").value;
+	let nameInput = document.getElementById("nameInput").value;
+	let trackInput = document.getElementById("trackInput").value;
 	const start = document.getElementById("startDate").value;
 	const end = document.getElementById("endDate").value;
-	const startDate = new Date(start).getTime() / 1000;
-	const endDate = new Date(end).getTime() / 1000;
+	let startDate = new Date(start).getTime() / 1000;
+	let endDate = new Date(end).getTime() / 1000;
 	const trainerOption = trainerInput.options[trainerInput.selectedIndex];
 	const cotrainerOption = coTrainerInput.options[coTrainerInput.selectedIndex];
+	console.log(cotrainerOption);
 	const trainerId = Number(trainerOption.getAttribute("name"));
-	const cotrainerId = Number(cotrainerOption.getAttribute("name"));
-	console.log(trainerId);
+	let cotrainerId = null;
+	if(cotrainerOption.innerText !== "--Select a Cotrainer--")
+		cotrainerId = Number(cotrainerOption.getAttribute("name"));
 	console.log(cotrainerId);
 	let associateStatus = false;
 	let trainerStatus = false;
@@ -189,15 +191,15 @@ async function createBatch() {
 		const batchId = Number(await resp.json());
 		associateStatus = await registerAssociatesToBatch(batchId);
 		const leadStatus = await registerTrainerToBatch(trainerId, batchId, "Lead");
-		const coLeadStatus = await registerTrainerToBatch(cotrainerId, batchId, "Co-lead");
+		let coLeadStatus = false;
+		if(cotrainerId !== null & cotrainerId !== undefined)
+			coLeadStatus = await registerTrainerToBatch(cotrainerId, batchId, "Co-lead");
+		else
+			coLeadStatus = true;
 		trainerStatus = leadStatus && coLeadStatus;
-		console.log(associateStatus);
-		console.log(trainerStatus);
 		if(associateStatus & trainerStatus){
 			alert("Batch created Successfully");
-			nameInput = "";
-			trackInput = "";
-			end = "";
+			location.reload();
 		}
 	} 
 	else {
@@ -211,24 +213,27 @@ async function createBatch() {
 async function registerAssociatesToBatch(batchId){
 	let valid = true;
 	const associates = addedAssoc.children;
+	const assocIds = [];
 	for (associate of associates) {
 		const assocId = Number(associate.getAttribute("name"));
+		assocIds.push(assocId);
+	}
 		const body = {
-			associateId: assocId,
+			associateIds: assocIds,
 			batchId: batchId,
+			trainingStatus: "Enrolled"
 		};
 		const config = {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(body),
 		};
-		const res = await fetch(pythonPath + "/associates/register", config);
-		console.log(res.status);
+		const res = await fetch(pythonPath + "/associates/multiregister", config);
 		if(res.status !== 201){
 			alert(`Adding the trainers or the associates with id ${await res.json().id}`);
 			return valid = false;
 		}
-	}
+
 	return valid;
 }
 
@@ -246,7 +251,6 @@ async function registerTrainerToBatch(trainerId, batchId, trainerRole){
 	};
 
 	const res = await fetch(pythonPath + "/trainers/register", trainerConfig);
-	console.log(res.status);
 	if(res.status !== 201){
 		alert("issue adding trainer");
 		return false;
