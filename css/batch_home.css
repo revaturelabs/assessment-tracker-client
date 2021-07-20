@@ -16,6 +16,8 @@
 .table-container{
     overflow: auto;
 }
+
+/*----------------------- Chart styling starts -----------------------*/
 .plusBox {
     margin-left: auto;
     margin-right: auto;
@@ -95,3 +97,4 @@
     width: 100%;
     cursor: pointer;
   }
+/*----------------------- Chart styling end -----------------------*/
