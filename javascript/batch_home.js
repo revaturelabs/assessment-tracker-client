@@ -159,7 +159,7 @@ function generateTable(week){
         <i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Assessment
         </button>
         <button id="table_submit_button" type="submit" style= "position:relative;left:.3rem;" class="btn btn-info" data-dismiss="modal"
-            onclick="updateTableGrades(${week});generateChart(${week});">
+            onclick="updateTableGrades(${week});">
             Submit &nbsp;<i class="fa fa-floppy-o" aria-hidden="true"></i>
         </button>
     </div>`;
@@ -196,7 +196,7 @@ function generateTable(week){
         batch.currentID = ${assessmentsArr[week][i].assessmentId};
         batch.currentCategory = ${assessmentsArr[week][i].categoryId};
         batch.currentType = ${assessmentsArr[week][i].typeId};
-        updateAssessInfo(batch.currentType, batch.currentCategory);
+        updateAssessInfo(batch.currentType);
         document.getElementById('assessWeightTitle').innerHTML = '${assessmentsArr[week][i].assessmentTitle} Weight';
         document.getElementById('weightControl').value = assessmentsArr[${week}][${i}].assessmentWeight;
         document.getElementById('weightValue').innerHTML = assessmentsArr[${week}][${i}].assessmentWeight;
@@ -235,8 +235,8 @@ function generateTable(week){
     for(let j = 0; j < assessmentsArr[week].length; ++j) {
         let avg = "-";
         let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
-        if(avgInfo) avg = avgInfo.average;
-        tableInnards+=`<td id="avg-data-${j}">${parseFloat(avg, 10).toFixed(2)}</td>`;
+        if(avgInfo) avg = parseFloat(avgInfo.average, 10).toFixed(2);
+        tableInnards+=`<td id="avg-data-${j}">${avg}</td>`;
     }
     //Finalize table html
     tableInnards += `<td></td></tr></tbody></table>`;
@@ -276,8 +276,63 @@ associateChartColor = [];
 function generateColors(){
     for(let i = 0; i < associates.length; ++i){
         associateChartColor.push("#" + Math.floor(Math.random()*16777215).toString(16));
+        //sometimes generates with one less character then need. Checks and adds to make sure it is a usable color
+        if(associateChartColor[i].length === 6){associateChartColor[i] = associateChartColor[i].concat("0");}
+        if(associateChartColor[i].length === 7){
+            if(isColorTooSimilar([29, 30, 34],associateChartColor[i],100) === true){associateChartColor.pop();--i;}
+            if(associateChartColor[i]!= undefined && isColorTooSimilar([70, 148, 196],associateChartColor[i],100) === true){associateChartColor.pop();--i;}
+        }else{associateChartColor.pop();--i;}
     }
 }
+/**
+ * Function that returns true if the sampleColor is closer to the backgroun
+ * color than the given threshold, otherwise false. This function can be used to
+ * determine if the input color is too similar to the background color
+ *@param {Number[]} sampleColor array representation of rgb values of sample color 
+ *@param {Number[]} backgroundColor array representation of rgb values of bg color
+ *@param {Number} thresholdDistance maximum distance sample color can be to background color
+ *@throws Error if thresholdDistance < 0
+ *@returns {boolean} true if color is outside threshold, false otherwise
+ **/
+ const isColorTooSimilar = function(backgroundColor, sampleColorHex, thresholdDistance){
+    sampleColor=hexStringToRgbArray(sampleColorHex)
+    if(thresholdDistance < 0) throw Error('Threshold distance must be greater than 0.');
+	const r = Math.pow(sampleColor[0]-backgroundColor[0], 2);	
+	const g = Math.pow(sampleColor[1]-backgroundColor[1], 2);
+	const b = Math.pow(sampleColor[2]-backgroundColor[2], 2);
+	const distance = Math.sqrt(r + g + b);
+	return distance < thresholdDistance ? true:false;
+} 
+/**Function that converts a string representation of RGB into an array 
+ * integer representation of RGB in base 10. Example: '#ffffff' => [255,255,255]
+ * or '#fff' => [255, 255, 255]
+ *@param {string} hexColorStr a string in HEX representation of RGB
+ *@throws {error} if string not formatted correctly or hex value out of range
+ *@returns {Number[]} an array number base 10 representation of color in RGB
+ **/
+ const hexStringToRgbArray = function (hexColorStr){
+     console.log(hexColorStr)
+    if(hexColorStr.length !== 7 && hexColorStr.length != 4) 
+        throw Error('Invalid input, hexColorStr must be of the form "#fff", "#ffffff" or "#f4f4f4"');
+    let rgbArray = [];
+    if(hexColorStr.length === 7){
+        for(let i = 1; i< hexColorStr.length; i+=2){
+            let val = `${hexColorStr[i]}${hexColorStr[i+1]}`;
+            rgbArray.push(parseInt(val,16));
+        }
+    }else{
+        for(let i = 1; i< hexColorStr.length; i++){
+            let val = `${hexColorStr[i]}${hexColorStr[i]}`;
+            rgbArray.push(parseInt(val,16));
+        }
+    }
+    for(const color in rgbArray){
+        if(color < 0 || color > 255){
+            throw Error('Invalid RGB value. R,G,B values must be between 00 and FF');
+        }
+    }
+    return rgbArray;
+};
 //hides and unhides the chart by making its heigh 0 or not
 // Class inactive makes it so that it starts at a max-height: 0
 //isBoxOpen traacks if the chart should be open when the new week is made
@@ -290,7 +345,7 @@ function flipArrow(){
         chartBox.style.maxHeight = null;
         isBoxOpen = false;
     } else {
-        chartBox.style.maxHeight = chartBox.scrollHeight + 200 + "px";
+        chartBox.style.maxHeight = chartBox.scrollHeight + 500 + "px";
         isBoxOpen = true;
 
     }
@@ -307,15 +362,17 @@ async function generateChart(week){
     let assessmentsArrNames = [];
     let averageArrGrades = [];
     let averageArrGradeIds = [];
+
     //Makes associates list for the chart 
     const chartAssociatesList = document.getElementById("chartAssociatesList");
     for(let i = 0; i < associates.length; ++i){
         associateArrNumberandName.push([associates[i].firstName + " " +associates[i].lastName, i])
     }
     letchartAssociatesListFill = "<ul>";
-    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
+    associateArrNumberandName.map(associateArr => letchartAssociatesListFill+=`<li><input type="checkbox" id="checkbox${associateArr[1]}" name="chartcheckbox${associateArr[1]}" onclick='generateChartAssociateUpdate(${week}, ${associateArr[1]}, "${associateArr[0]}")'><label for="chartcheckbox${associateArr[1]}">&nbsp;${associateArr[0]}</label></li>`)
     letchartAssociatesListFill += "</ul>";
     chartAssociatesList.innerHTML = letchartAssociatesListFill;
+
     //Makes default chart
     assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
     assessmentsArr[week].map(assessment => averageArrGradeIds.push(assessment.assessmentId));
@@ -329,8 +386,8 @@ async function generateChart(week){
         labels: assessmentsArrNames,
         datasets: [{
             label: 'Class Average',
-            backgroundColor: 'rgb(255, 99, 132)', 
-            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
             data: averageArrGrades,
         }]
     };
@@ -349,8 +406,8 @@ async function generateChart(week){
     chartAssociatesList.style.maxHeight=chartHeight + "px";
 
 }
-// creates chart depending on who you select
-async function generateChartUpdate(week, associateArrNumber, associateFullName){
+// Updates chart depending on who you select from the Associate list
+async function generateChartAssociateUpdate(week, associateArrNumber, associateFullName){
     let associatesArrGrades = [];
     gradeCache[week][associateArrNumber].map(associate => associatesArrGrades.push(associate))
     //Sees if you have checked or unchecked
@@ -372,10 +429,37 @@ async function generateChartUpdate(week, associateArrNumber, associateFullName){
 
     gradeChart.update();
 }
-//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and category the assessment belongs to.
+
+//Updates chart when grades and assesments are updated
+function generateUpdatedChart(week){
+    let assessmentsArrNames = [];
+    let averageArrGrades = [];
+    assessmentsArr[week].map(assessment => assessmentsArrNames.push(assessment.assessmentTitle));
+    for(let j = 0; j < assessmentsArr[week].length; ++j) {
+        let avg = "-";
+        let avgInfo = assessmentIDToAverageCache[week].get(assessmentsArr[week][j].assessmentId);
+        if(avgInfo) avg = avgInfo.average;
+        averageArrGrades.push(avg)
+    }
+    gradeChart.data = {
+        labels: assessmentsArrNames,
+        datasets: [{
+            label: 'Class Average',
+            backgroundColor: '#4694c4', 
+            borderColor: '#4694c4',
+            data: averageArrGrades,
+        }]};
+    gradeChart.update();
+    //unchecks boxses for new chart
+    for(let i = 0; i < associates.length; ++i){document.getElementById(`checkbox${i}`).checked = false;}
+}
+
+
+//updateAssessInfo is called whenever you click on an assessment in the Batch Home page. This updates the two lines that tells you what type and default weight the assessment is.
 //Assessment types are currently fixed, so a switch determines which type to display based on typeId.
-//The Category name is retrieved from the DB using the given ID and displayed using getCategoryNameComplete.
-async function updateAssessInfo(typeId, catId) {
+//Default weight also changes depending on the assessment's type.
+//Another function called getCategoryByAssessment changes the Category line.
+function updateAssessInfo(typeId) {
     let typeName = "";
     let typeNum = 0;
 
@@ -398,30 +482,10 @@ async function updateAssessInfo(typeId, catId) {
             break;
     }
 
-    let response_func = getCategoryNameComplete;
-    let endpoint =  `categories/${catId}`;
-    let url = java_base_url + endpoint;
-    let request_type = "GET";
-    let response_loc = false;
-    let load_loc = false;
-    let jsonData = false;
-
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
     document.getElementById('assessTypeText').innerText = "Assessment Type: "+typeName;
     document.getElementById('assessWeightText').innerText = "Default weight is "+String(typeNum);
 }
 
-function getCategoryNameComplete(status, response, response_loc, load_loc) {
-    if(status==200){
-        //console.log("Success");
-        let catName = JSON.parse(response);
-        //console.log(catName.name);
-        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catName.name;
-    }else{
-        console.log("Potential Failure");
-        console.log(JSON.parse(response));
-    }
-}
 
 async function addWeek(totalWeeks) {
     let holder = "";
@@ -585,6 +649,7 @@ function updateTableGradesComplete(status, response, response_loc, load_loc) {
     }else if(status >= 500){
         toggleAlert(false, "Internal service error.");
     }
+    generateUpdatedChart(curWeek);
 }
 
 //Get all Current Assessments for a Week
@@ -803,6 +868,7 @@ function createAssessment_complete(status, response, response_loc, load_loc) {
         addGradeCacheCol(curWeek);
         generateTable(curWeek); 
         generateChart(curWeek);
+        generateUpdatedChart(curWeek);
         //action if code 400
     } else if(status == 400) {
         //load the response into the response_loc
@@ -1109,6 +1175,10 @@ let pendingCategories = new Map();
 let assessment_id;
 let category_id;
 let cur_category;
+/**
+ * This is a legacy function. Checks if the form is valid, then posts both the assessment
+ * and all the pending categories in the pendingCategories Map
+ **/
 async function checkValid(){
     let form = document.getElementById("createAssessmentForm");
     if (form.checkValidity() === true) {
@@ -1121,6 +1191,11 @@ async function checkValid(){
     displayCategories();
 }
 
+/**
+ * This function begins the POST request, creating an entity in the categories_junction table
+ *@param {String} cat_name the category name to add
+ *@param {String} cat_id the category id to add
+ **/
 async function postCategory(cat_name, cat_id){
     let request_type = "POST";
     arr = assessmentsArr[curWeek].length-1;
@@ -1133,6 +1208,13 @@ async function postCategory(cat_name, cat_id){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function clears the category fields on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function postCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         toggleAlert(true, "Category successfully created.");
@@ -1144,12 +1226,18 @@ function postCategory_Complete(status, response, response_loc, load_loc){
     }
 }
 
+/**
+ * This function clears the category fields on the form
+ **/
 function clearFields(){
     document.getElementById("assessment-title").value = "";
     pendingCategories.clear();
     displayCategories();
 }
 
+/**
+ * This function begins the POST request to create a new category
+ **/
 async function newCategory(){
     let request_type = "POST";
     let endpoint = `categories`;
@@ -1161,6 +1249,13 @@ async function newCategory(){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function clears the new category field on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function newCategory_Complete(status, response, response_loc, load_loc){
     if(status === 201){
         document.getElementById("new-category").value = "";
@@ -1171,6 +1266,9 @@ function newCategory_Complete(status, response, response_loc, load_loc){
     }
 }
 
+/**
+ * This function begins the GET request to get all possible categories
+ **/
 async function getCategories() {
     let response_func = getCategories_Complete;
     let endpoint =  `categories`;
@@ -1184,7 +1282,16 @@ async function getCategories() {
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+//stores all possible categories to an array
 let categories;
+
+/**
+ * This function clears the new category field on the form and sends an alert message
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function getCategories_Complete(status, response, response_loc, load_loc){
     if(status===200){
         categories = JSON.parse(response);
@@ -1197,16 +1304,18 @@ function getCategories_Complete(status, response, response_loc, load_loc){
                 option.id = category.name;
                 option.value = category.name;
                 option.innerHTML = category.name;
-                // option.onclick = addCategoryList(category);
                 select.appendChild(option);
                 
             }
         }
     }else{
-        console.log("Potential Failure");
+        console.log("Failed to retrieve categories.");
     }
 }
 
+/**
+ * This function begins the GET request to get all categories for an assessment
+ **/
 async function getCategoryByAssessment(assessId){
     let response_func = getCategoryByAssessment_Complete;
     let endpoint =  `assessments/${assessId}/categories`;
@@ -1219,6 +1328,13 @@ async function getCategoryByAssessment(assessId){
     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
+/**
+ * This function displays all the categories for an assessment when you click on the assessment.
+ *@param {String} status the status code response
+ *@param {String} response the response message
+ *@param {String} response_loc the response location
+ *@param {String} load_loc the load location
+ **/
 function getCategoryByAssessment_Complete(status, response, response_loc, load_loc){
     if(status===200){
         categories = JSON.parse(response);
@@ -1227,13 +1343,20 @@ function getCategoryByAssessment_Complete(status, response, response_loc, load_l
             category = categories[i];
             catText += category.name+", ";
         }
-        document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
+        if (catText === ""){
+            document.getElementById('assessCategoryText').innerText = "Assessment Category: None";
+        } else {
+            document.getElementById('assessCategoryText').innerText = "Assessment Category: "+catText.slice(0,-2);
+        }
     }else{
-        console.log("Potential Failure");
+        console.log("Failed to retrieve category information for this assessment.");
     }
 }
 
-async function addCategory(){
+/**
+ * This function checks if the select box has a value. If so
+ **/
+function addCategory(){
     if(document.getElementById("category-select").value == null){//no option selected upon an add
         toggleAlert(false, "Please select a category.");
         return;
@@ -1243,13 +1366,17 @@ async function addCategory(){
     for(let i=0;i<categories.length;i++){
         category = categories[i];
         if(category.name == value){
-            addCategoryList(category);//add to list, will POST all upon clicking submit button
+            addCategoryList(category);//add to list, will POST all later upon clicking submit button
             document.getElementById("category-select").selectedIndex = -1;
         }
     }
     displayCategories();
 }
 
+/**
+ * This function checks if the category already exists. If not, adds to the pendingCategories Map
+ *@param {Object} category the category to add to the Map
+ **/
 function addCategoryList(category){
     if(pendingCategories.has(category.name)){//if category already in pending list
         toggleAlert(false, "Category already added.");
@@ -1260,12 +1387,20 @@ function addCategoryList(category){
     }
 }
 
+/**
+ * This function removes a pending category from pendingCategories and refreshes the displays
+ *@param {Object} category_name should be the category name.. Is currently actually the category object
+ **/
 function cancelCategory(category_name){
     
     pendingCategories.delete(category_name.id);
     displayCategories();
 }
 
+/**
+ * This function refreshes the display of categories upon
+ * creating a new assessment. This will reflect the pendingCategories Map variable
+ **/
 function displayCategories(){
     let li = document.getElementById("category-list");
     li.innerHTML = ``;
