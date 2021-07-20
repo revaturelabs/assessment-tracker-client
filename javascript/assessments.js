@@ -61,7 +61,7 @@ function caller() {
     let jsonData = "";
     console.log(jsonData);
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function caller_complete(status, response, response_loc, load_loc) {
@@ -117,7 +117,7 @@ function getAssessmentData(traineeId = 0) {
     let jsonData = "";
     console.log(jsonData);
 
-    ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function getAssessmentData_complete(status, response, response_loc) {

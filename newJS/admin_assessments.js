@@ -2,7 +2,7 @@ const pythonPath = "http://ec2-34-204-173-118.compute-1.amazonaws.com:5000";
 const bucketPath = "http://adam-ranieri-batch-1019.s3.amazonaws.com";
 let java_base_url = "http://34.204.173.118:7001/";
 
-// populates the tech stacks tables with every assessment and average
+// populates the tech stacks tables with every assessment and average 
 async function getAssessments(category){
     const response = await fetch(`http://34.204.173.118:7001/categories/${category}/averages`);
     const assessments = await response.json();

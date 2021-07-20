@@ -1,4 +1,4 @@
-// highlights which page you are on in main nav
+// highlights which page you are on in main nav 
 let onHome = offPage;
 let onBatch = onPage;
 let onAssess = offPage;
@@ -65,7 +65,7 @@ async function getBatchGradesForWeek(week) {
     let response_loc = `table-container`;
     let load_loc = "table-container";
     let jsonData = "";
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 function getBatchGradesForWeekComplete(status, response, response_loc, load_loc) {
     if(status === 200) {
@@ -90,7 +90,7 @@ async function getAveragesForWeek(week) {
     let response_loc = `table-container`;
     let load_loc = "table-container";
     let jsonData = "";
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 function getAveragesForWeekComplete(status, response, response_loc, load_loc) {
     if(status === 200) {
@@ -560,7 +560,7 @@ async function getAssessmentsForWeek(weekId) {
     let response_loc = `mainbody`;
     let load_loc = "batchLoader"+weekId;
     let jsonData = "";
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 function getAssessmentsForWeekComplete(status, response, response_loc, load_loc) {
     if (status == 200) {
@@ -597,7 +597,7 @@ async function updateTableGrades(week) {
                 "assessmentId": assessmentsArr[week][j].assessmentId,
                 "score": newGradeValueDOM.value
             };
-            await ajaxCaller(method, url, response_func, response_loc, load_loc, jsonData);
+            await fetchAndUpdateUi(method, url, response_func, response_loc, load_loc, jsonData);
         }
     }
     dropdownDOM.disabled = false;
@@ -676,7 +676,7 @@ async function getAssessments(weekId) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getAssessments_complete(status, response, response_loc, load_loc) {
@@ -741,7 +741,7 @@ async function batchData(batchID, response_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 async function batchData_complete(status, response, response_loc, load_loc) {
@@ -841,7 +841,7 @@ async function createAssessment() {
     console.log(thisAssessment);
     console.log(thisWeekId);
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 
 function createAssessment_complete(status, response, response_loc, load_loc) {
@@ -904,7 +904,7 @@ async function updateWeight(weekID, assessID, weight) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function updateWeight_complete(status, response, response_loc, load_loc) {
@@ -959,7 +959,7 @@ async function getAssociates() {
     //can be left blank if not needed
     let jsonData = "";
 
-     await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+     await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getAssociates_complete(status, response, response_loc, load_loc) {
@@ -1018,7 +1018,7 @@ async function UpdateScores(grade,assessmentID,response_loc,load_loc) {
         "score": grade
     };
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function UpdateScores_complete(status, response, response_loc, load_loc) {
@@ -1078,7 +1078,7 @@ async function getScore(assessmentId,associateId,response_loc,load_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function getScore_complete(status, response, response_loc, load_loc) {
@@ -1205,7 +1205,7 @@ async function postCategory(cat_name, cat_id){
     let response_loc = "";
     let load_loc = "";
     let jsonData = {'name': cat_name, 'id': cat_id};
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 /**
@@ -1246,7 +1246,7 @@ async function newCategory(){
     let response_loc = "";
     let load_loc = "";
     let jsonData = {'name': document.getElementById("new-category").value};
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 /**
@@ -1279,7 +1279,7 @@ async function getCategories() {
     let jsonData = false;
 
     
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 //stores all possible categories to an array
@@ -1325,7 +1325,7 @@ async function getCategoryByAssessment(assessId){
     let load_loc = false;
     let jsonData = false;
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData);
 }
 
 /**

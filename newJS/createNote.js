@@ -1,5 +1,5 @@
 //depends on ../javascript/main.js
-//depends on ../javascript/batch_home.js
+//depends on ../javascript/batch_home.js 
 
 const noteTextArea = document.getElementById('note_text');
 const submitNoteBtn = document.getElementById('submit_new_note_btn');
@@ -26,21 +26,21 @@ const getAllNotes = async function(){
     const cbFunction = function(...params){
         notes = JSON.parse(params[1]);
     }
-    await ajaxCaller(method, url, cbFunction);
+    await fetchAndUpdateUi(method, url, cbFunction);
 }
 
 const createNote = async function(note){
     const method = 'POST';
     const url = `${base_url}notes`;
     const cbFunction = (...params) => {}
-    await ajaxCaller(method, url, cbFunction, null, null, note);
+    await fetchAndUpdateUi(method, url, cbFunction, null, null, note);
 }
 
 const updateNote = async function(note){
     const method = 'PUT';
     const url = `${base_url}notes/${note.id}`;
     cbFunction = (...params) => {}
-    await ajaxCaller(method, url, cbFunction, null, null, note);
+    await fetchAndUpdateUi(method, url, cbFunction, null, null, note);
 }
 
 const findStudentNoteForWeek = function(week, batchId, associateId){

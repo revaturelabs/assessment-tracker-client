@@ -66,7 +66,7 @@ async function caller() {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 //This is a template to copy and paste to connect to a new endpoint
@@ -119,7 +119,7 @@ async function loadBatchesbyYear(trainerId) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function loadBatchesbyYear_complete(status, response, response_loc, load_loc) {
@@ -181,7 +181,7 @@ async function branchData(trainerId, year, response_loc) {
     //can be left blank if not needed
     let jsonData = "";
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+    await fetchAndUpdateUi(request_type, url, response_func, response_loc, load_loc, jsonData)
 }
 //ajax on-complete function: receives the response from an ajax request
 function branchData_complete(status, response, response_loc, load_loc) {

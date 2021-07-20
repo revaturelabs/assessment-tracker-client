@@ -1,38 +1,24 @@
-/*
-    This is the master(main) js/JQuery override file
-    Use this to write custom js/JQuery code that will be universally accessible
-
-    ---------Standards and Best Practices-------------------
-    -- 1. Make sure to always copy and paste this header to each *.js,*.css file to map the important functionality
-    -- 2. Use the page specific code sparingly, do your best to write relative Dynamic code - will save time and energy
-    -- 3. When reaching Production please "minify" all js/css files to eliminate comments and condense the files
-    -- 4. "Min" file naming pattern should be as follows:
-            Page specific - "[name].min.[version #].[js/css]"
-            Main files    - "main.min.[version #].[js/css]"
-    -- 5. Please remove this file from the production version to keep file structure integrity and security reasons
-    --------Standards and Best Practices End---------------
-*/
-/*
-    -------------------Code Chapters-----------------------
-    -- 1. Global var Declarations
-    -- 2. Ajax
-    -- 3. Onload.Body Initializers
-    -- 4. Listeners
-    -- 5. Arrow/Anonymous Functions
-    -- 6. Misc Named Functions
-    -------------------Code Chapters End-------------------
-*/
-
-// Chapter 1. Global var Declarations ---------------------
-
-//This is the base url that we are using this base will always be applied it is global scope
+//urls
 let base_url = "http://34.204.173.118:5000/";
 let java_base_url = "http://34.204.173.118:7001/";
+
+//state variables
 let loginData = new Object();
 let batches = new Object();
-//holds the string value of months
 let months = new Array("January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December");
-// main header content
+/*the followin 2 variables represents whether 
+/*you are on this page in main nav or not*/
+let onPage = "text-light";
+let offPage = "text-dark";
+// temporarily holds the main body content if user is not logged in until user logs in
+let tempMainContentHolder = $("#mainbody").html();
+
+//create local storage key 'batchId'
+if (!window.localStorage["batchId"]){
+    localStorage.setItem("batchId", null);
+}
+
+// header markup 
 let mainHeader = `
 <nav class="nav top-nav navbar-expand-lg d-flex justify-content-between bg-dark" aria-labelledby="Topbar navigation">
     <a class="navbar-toggler rounded-0" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,12 +44,8 @@ let mainHeader = `
         </form>
     </div>
 </nav>`;
-// represents you are on this page in main nav
-let onPage = "text-light";
-// represents you are not on this page in main nav
-let offPage = "text-dark";
-// must login message
-//var to set the body of the page to if user is not logged in
+
+//markup when user is not logged in
 let mustLogin = `
 <div class="col-sm-1-10">
     <div class="card mb-5 bg-darker p-3">
@@ -73,201 +55,127 @@ let mustLogin = `
         </div>
     </div>
 </div>`;
-// temporarily holds the main body content if user is not logged in until user logs in
-let tempMainContentHolder = $("#mainbody").html();
 
-// Chapter 1. Global var Declarations End -----------------
-if (window.localStorage["batchId"]){
-}else{
-    localStorage.setItem("batchId", null);
-}
-
-// Chapter 2. Ajax ----------------------------------------
-
-// This Ajax Call is a Singleton(only 1 instance)
-// All Ajax calls pass through here
-
-/**
- * @param {string} request_type method of request GET, POST...etc.
+/** Function to perform fetch request
+ * @param {string} requestMethod method of request GET, POST...etc.
  * @param {string} url address to send request to
- * @param {function} response_func callback function to execute  
- * @param {string} response_loc (optional) the element that needs to be updated on UI
- * @param {string} load_loc (optional) the position of the loader by element ID
- * @param {object} jsonData (optional) object to send in body with request
+ * @param {object} requestBody (optional) object to send in body with request
+ * @throws error if fetch fails
+ * @return {object} response object returned by fetch  
  **/
-async function ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData) {
-    //create the loading object dynamically ----------
-
-    //check if load_loc exists
-    if(document.getElementById(load_loc)) {
-        //play the loading animation until it is done loading
-        //resets the load location to nothing
-        document.getElementById(load_loc).innerHTML = "";
-        //creates loader
-        let pre_load_ani = document.createElement("div");
-        // Class:"loader" is a full css animation
-        // If you wish to change the loading animation
-        // CSS Location = main.css ".loader"
-        pre_load_ani.setAttribute("class", "loader");
-        //appends loader to loader loc
-        document.getElementById(load_loc).appendChild(pre_load_ani);
-    }
-
-    //load factory end ------------------------------
-
-    //create the ajax object
-    /*let ajax = new XMLHttpRequest();
-    //initiate the ajax function
-    ajax.onreadystatechange = function () {
-        if (this.readyState == 4) {
-            //readystate:4 means the response has come back
-
-            //remove the loading animation
-            document.getElementById(load_loc).innerHTML = "";
-
-            //set response_holder to hold the response data
-            let response_holder = this.responseText;
-
-            //send the response to this function
-            response_func(this.status, response_holder, response_loc, load_loc)
-
-        }
-    }*/
-
-    
-    //ajax.open(request_type, url, true);
-
-    //optional: checks if json data is being passed
-    /*if(jsonData) {
-        ajax.setRequestHeader("Content-Type", "application/json");
-        ajax.send(JSON.stringify(jsonData));
-    } else {
-        ajax.send();
-    }*/
-
-    //Make template request object
-    let content_object = {
-        method: request_type,
+async function fetchFactory(requestMethod, url, requestBody){
+    //Build request config
+    let config = {
+        method: requestMethod,
         mode: 'cors',
         credentials: 'same-origin',
         referrerPolicy: 'no-referrer'
     };
-    //Set our body if JSON is passed
-    if(jsonData) {
-        content_object.headers = {'Content-Type': 'application/json'};
-        content_object.body = JSON.stringify(jsonData);
+    if(requestBody) {
+        config.headers = {'Content-Type': 'application/json'};
+        config.body = JSON.stringify(requestBody);
     }
-
-    //request_type: represents the request type: GET, POST, PUT, etc....
-    //url: represents the base_url + the endpoint
-    const response = await fetch(url, content_object);
-
-    let response_holder = await response.text();
-
-    //Reset loader
-    const loaderDom = document.getElementById(load_loc);
-    if(loaderDom) loaderDom.innerHTML = "";
-
-    //send the response to this function
-    //response_func(this.status, response_holder, response_loc, load_loc);
-    response_func(response.status, response_holder, response_loc, load_loc);
+    try{
+        const response = await fetch(url, config);
+        return response;
+    }catch(err){
+        console.log('failed to fetch resource...');
+    }
 }
-// Login Function
-// email for the login(obj)
-async function logMeIN(email) {
-    //set the caller_complete to the function that is supposed to receive the response
-    //naming convention: [this function name]_complete
-    let response_func = logMeIN_complete;
-    //endpoint: rest api endpoint
-    let endpoint = "login"
-    //set the url by adding (base_url/java_base_url) + endpoint
-    //options:
-    //base_url(python)
-    //java_base_url(java)
-    let url = base_url + endpoint;
-    //request_type: type of request
-    //options:
-    //"GET", "POST", "OPTIONS", "PATCH", "PULL", "HEAD", "DELETE", "CONNECT", "TRACE"
-    let request_type = "POST";
-    //location you want the response to load
-    let response_loc = "loadResult";
-    //optional:location you want the load animation to be generated while awaiting the response
-    //can be set for any location but will most often be set to response_loc
-    //can be left blank if not needed
-    let load_loc = "logload";
-    //optional:json data to send to the server
-    //can be left blank if not needed
-    let jsonData = email;
 
-    await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData)
+/**
+ * @param {string} requestMethod method of request GET, POST...etc.
+ * @param {string} url address to send request to
+ * @param {function} cbFunction callback function to execute  
+ * @param {string} responseLocation (optional) the element that needs to be updated on UI
+ * @param {string} loaderLocation (optional) the position of the loader by element ID
+ * @param {object} requestBody (optional) object to send in body with request
+ **/
+async function fetchAndUpdateUi(requestMethod, url, cbFunction, responseLocation, loaderLocation, requestBody) {
+    toggleLoader(true, loaderLocation);
+    const response = await fetchFactory(requestMethod, url, requestBody);
+    const responseJSON = await response.text();
+    toggleLoader(false, loaderLocation);
+    cbFunction(response.status, responseJSON, responseLocation, loaderLocation);
 }
-//ajax on-complete function: receives the response from an ajax request
-function logMeIN_complete(status, response, response_loc, load_loc) {
-    //do some logic with the ajax data that was returned
-    //do this if you are expecting a json object - JSON.parse(response)
 
-    //The var "load_loc" is set in case the response message is different from the action to be loaded into the named location
-    //example:
-    //-- you want a message to say "ajax done!" in a popup while the data is compiled and loaded somewhere else
+/**Log in handler for login button.
+ * @param {string} email email input to login
+ * @param {function} cbFunction callback function to execute
+ */
+async function logMeIN(email, cbFunction = logMeIN_complete){
+    let url = base_url + 'login';
+    let requestMethod = "POST";
+    let responseLocation = "loadResult";
+    let loaderLocation = "logload";
+    let requestBody = email;
+    await fetchAndUpdateUi(requestMethod, url, cbFunction, responseLocation, loaderLocation, requestBody);
+}
 
+/** 
+ * Function to toggle the loader.
+ * @param {boolean} onOroff flag to indicate whether loader should be turned on or off
+ * @param {string} location id of dom element where loader should be loaded
+ */
+function toggleLoader(onOroff, loaderLocation){
+    if(onOroff){
+         //check if loaderLocation exists
+        if(document.getElementById(loaderLocation)) {
+            document.getElementById(loaderLocation).innerHTML = "";
+            //creates loader
+            let loaderAnimation = document.createElement("div");
+            loaderAnimation.setAttribute("class", "loader");
+            document.getElementById(loaderLocation).appendChild(loaderAnimation);
+        }
+    }else{
+        const loaderDom = document.getElementById(loaderLocation);
+        if(loaderDom) loaderDom.innerHTML = "";
+    }
+}
+
+/**
+ * Function that runs after response to login completes
+ * @param {number} status status code from response
+ * @param {string} response JSON string body of response 
+ * @param {string} responseLocation id of dom element to be updated
+ */
+function logMeIN_complete(status, response, responseLocation) {
     //action if code 200
     if(status == 200) {
-        //$("#loginBtn").html(`Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`);
+        //update UI
         document.getElementById("loginBtn").innerHTML = `Log Out &nbsp;<i class="fa fa-sign-out" aria-hidden="true"></i>`;
         document.getElementById("loginBtn").setAttribute("data-target", "#logoutModal");
-        //save the session
+        //preserve state and save session storage
         saveSession(loginData, response);
-        // loads it back to the object
         loginData = getSession(loginData, true);
-        //admin check
+        //check if user is admin
         if(loginData["admin"]){
             goToAdminPage(true);
         }
-        // hides the modal after login is successful
+        //update UI
         $('#loginModal').modal('hide');
         pageDataToLoad();
-
-        //action if code 201
-    } else if(status == 201) {
-        document.getElementById(response_loc).innerHTML = JSON.parse(response);
-        //action if code 400
-    } else if(status == 404) {
-        //load the response into the response_loc
-        document.getElementById(response_loc).innerHTML = `<p class="text-danger">${response}!</p>`;
+    }else if(status == 201) {
+        document.getElementById(responseLocation).innerHTML = JSON.parse(response);
+    }else if(status == 404) {
+        document.getElementById(responseLocation).innerHTML = `<p class="text-danger">${response}!</p>`;
     }
 }
-// Search Function
-// load related batches of all batches
-async function searchBatches(searchVal) {
-    //set the caller_complete to the function that is supposed to receive the response
-    //naming convention: [this function name]_complete
-    let response_func = searchBatches_complete;
-    //endpoint: rest api endpoint
 
-    //Backend route does not currently check to see if you're logged in
+/**
+ * Function to search fetch batches
+ * @param {string} searchVal 
+ */
+async function searchBatches(searchVal) {
+    let cbFunction = searchBatches_complete;
     let endpoint = `trainers/${loginData.id}/batches?track=${searchVal}`;
-    //set the url by adding (base_url/java_base_url) + endpoint
-    //options:
-    //base_url(python)
-    //java_base_url(java)
     let url = base_url + endpoint;
-    //request_type: type of request
-    //options:
-    //"GET", "POST", "OPTIONS", "PATCH", "PULL", "HEAD", "DELETE", "CONNECT", "TRACE"
-    let request_type = "GET";
-    //location you want the response to load
-    let response_loc = "searchSuggestion";
-    //optional:location you want the load animation to be generated while awaiting the response
-    //can be set for any location but will most often be set to response_loc
-    //can be left blank if not needed
-    let load_loc = response_loc;
-    //optional:json data to send to the server
-    //can be left blank if not needed
-    let jsonData = "";
-    console.log("searchVal")
-    console.log(searchVal)
+    let requestMethod = "GET";
+    let responseLocation = "searchSuggestion";
+    let loaderLocation = responseLocation;
+    let requestBody = "";
     if(searchVal && loginData.id != undefined) {
-        await ajaxCaller(request_type, url, response_func, response_loc, load_loc, jsonData);
+        await fetchAndUpdateUi(requestMethod, url, cbFunction, responseLocation, loaderLocation, requestBody);
     } else if(loginData.id == undefined) {
         document.getElementById('searchSuggestion').innerHTML = `<div class="d-block m-1 bg-lighter rounded"><p class="d-block text-center text-black p-3 bg-lighter rounded">Please <a class="text-info login-modal-link rounded" data-toggle="modal" href="#loginModal">Log In</a> to use this search feature.</p></div>`;
     }
@@ -277,39 +185,32 @@ async function searchBatches(searchVal) {
         }
     }
 }
-//ajax on-complete function: receives the response from an ajax request
-function searchBatches_complete(status, response, response_loc, load_loc) {
-    //do some logic with the ajax data that was returned
-    //do this if you are expecting a json object - JSON.parse(response)
 
-    //The var "load_loc" is set in case the response message is different from the action to be loaded into the named location
-    //example:
-    //-- you want a message to say "ajax done!" in a popup while the data is compiled and loaded somewhere else
-
+/**
+ * Function to execute after batch fetch competes.
+ * @param {number} status response status code 
+ * @param {object} response response object returned from fetch
+ * @param {string} responseLocation id of do element where ui must update due to response
+ */
+function searchBatches_complete(status, response, responseLocation) {
     //action if code 200
     if(status == 200) {
         let parsedResponse = JSON.parse(response);
         console.log(parsedResponse);
         if(Object.keys(parsedResponse).length <= 0) {
-            document.getElementById(response_loc).innerHTML = `<div class="d-block m-1 bg-lighter rounded"><p class="d-block text-center text-black p-3 bg-lighter rounded">- No Batches with this name exist! -</p></div>`;
+            document.getElementById(responseLocation).innerHTML = `<div class="d-block m-1 bg-lighter rounded"><p class="d-block text-center text-black p-3 bg-lighter rounded">- No Batches with this name exist! -</p></div>`;
         } else {
-            document.getElementById(response_loc).innerHTML = styleSearch(parsedResponse, document.getElementById("search").value);
+            document.getElementById(responseLocation).innerHTML = styleSearch(parsedResponse, document.getElementById("search").value);
         }
         //action if code 201
     } else if(status == 201) {
-        document.getElementById(response_loc).innerHTML = JSON.parse(response);
+        document.getElementById(responseLocation).innerHTML = JSON.parse(response);
         //action if code 400
     } else if(status == 400) {
-        //load the response into the response_loc
-        document.getElementById(response_loc).innerHTML = response;
+        //load the response into the responseLocation
+        document.getElementById(responseLocation).innerHTML = response;
     }
 }
-
-// Chapter 2. Ajax End ------------------------------------
-
-// Chapter 3. Onload.Body Initializers --------------------
-
-//set a standard for form validation
 
 
 //Iterates through all forms on a page then cancels the forms default functions
